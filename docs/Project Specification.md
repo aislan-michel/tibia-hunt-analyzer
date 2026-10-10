@@ -224,6 +224,13 @@ Choose appropriate decimal or integer types for financial values and counts, and
 
 Do not invent item values or monster counts that are absent from the input.
 
+Initial domain-model assumptions:
+- XP, damage, healing, monster counts, and item quantities use non-negative 64-bit integers when present.
+- Hourly rates and currency amounts use decimals; balance may be negative.
+- Source metrics and entity counts remain nullable when omitted by the imported data.
+- `Duration` is the source-reported hunt duration; elapsed time is separately derived from session start and end.
+- Item values are not modeled until the input formats establish whether a value is per-item or a total.
+
 ## 10. Persistence and data integrity
 
 SQLite is the primary source of truth.

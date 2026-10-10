@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TibiaHuntAnalyzer.Application/TibiaHuntAnalyzer.Application.csproj" />
+    <Project Path="src/TibiaHuntAnalyzer.Desktop/TibiaHuntAnalyzer.Desktop.csproj" />
+    <Project Path="src/TibiaHuntAnalyzer.Domain/TibiaHuntAnalyzer.Domain.csproj" />
+    <Project Path="src/TibiaHuntAnalyzer.Infrastructure/TibiaHuntAnalyzer.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TibiaHuntAnalyzer.Tests.Integration/TibiaHuntAnalyzer.Tests.Integration.csproj" />
+    <Project Path="tests/TibiaHuntAnalyzer.Tests.Unit/TibiaHuntAnalyzer.Tests.Unit.csproj" />
+  </Folder>
+</Solution>

@@ -13,6 +13,8 @@ public sealed partial class HomeViewModel : ViewModelBase
 
     public event EventHandler? AnalyticsRequested;
 
+    public event EventHandler? BackupRestoreRequested;
+
     [RelayCommand]
     private void Insert() => InsertRequested?.Invoke(this, EventArgs.Empty);
 
@@ -24,4 +26,7 @@ public sealed partial class HomeViewModel : ViewModelBase
 
     [RelayCommand]
     private void OpenAnalytics() => AnalyticsRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
+    private void OpenBackupRestore() => BackupRestoreRequested?.Invoke(this, EventArgs.Empty);
 }

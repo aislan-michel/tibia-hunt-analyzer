@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TibiaHuntAnalyzer.Desktop.ViewModels"
+             x:Class="TibiaHuntAnalyzer.Desktop.Views.BackupRestoreView"
+             x:DataType="vm:BackupRestoreViewModel">
+    <Grid RowDefinitions="Auto,*,Auto"
+          RowSpacing="16"
+          Margin="0,24,0,0">
+        <TextBlock Grid.Row="0"
+                   Text="Backup e restauração do banco de dados"
+                   FontSize="24"
+                   FontWeight="SemiBold" />
+
+        <StackPanel Grid.Row="1"
+                    VerticalAlignment="Top"
+                    Spacing="14">
+            <TextBlock Text="Os arquivos de backup contêm seus personagens, locais e sessões. Guarde-os em um local seguro."
+                       TextWrapping="Wrap" />
+            <Button Content="Criar backup"
+                    Command="{Binding CreateBackupCommand}"
+                    HorizontalAlignment="Left"
+                    MinWidth="180"
+                    MinHeight="44" />
+
+            <TextBlock Text="Restaurar substitui o banco de dados atual. Antes da substituição, o aplicativo cria automaticamente uma cópia de segurança do banco atual."
+                       TextWrapping="Wrap"
+                       Margin="0,12,0,0" />
+            <CheckBox Content="Entendo que a restauração substituirá os dados atuais"
+                      IsChecked="{Binding ConfirmRestore}" />
+            <Button Content="Selecionar backup e restaurar"
+                    Command="{Binding RestoreBackupCommand}"
+                    HorizontalAlignment="Left"
+                    MinWidth="240"
+                    MinHeight="44" />
+        </StackPanel>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <TextBlock Grid.Column="0"
+                       Text="{Binding StatusMessage}"
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center"
+                       AutomationProperties.LiveSetting="Polite" />
+            <Button Grid.Column="1"
+                    Content="Voltar"
+                    Command="{Binding ExitCommand}"
+                    MinWidth="100" />
+        </Grid>
+    </Grid>
+</UserControl>

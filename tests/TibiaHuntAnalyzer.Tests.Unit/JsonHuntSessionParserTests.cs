@@ -67,6 +67,39 @@ public class JsonHuntSessionParserTests
             });
     }
 
+    [Fact]
+    public void Parse_AcceptsUserProvidedTibiaTimestampAndZeroDurationFormats()
+    {
+        var result = _parser.Parse(
+            """
+            {
+              "Balance": "0",
+              "Damage": "0",
+              "Damage/h": "0",
+              "Healing": "0",
+              "Healing/h": "0",
+              "Killed Monsters": [],
+              "Loot": "0",
+              "Looted Items": [],
+              "Raw XP Gain": "0",
+              "Raw XP/h": "0",
+              "Session end": "2026-10-09, 23:10:20",
+              "Session length": "00:00h",
+              "Session start": "2026-10-09, 23:10:12",
+              "Supplies": "0",
+              "XP Gain": "0",
+              "XP/h": "0"
+            }
+            """);
+
+        Assert.True(result.IsSuccess, string.Join(Environment.NewLine, result.Errors));
+        Assert.Equal(TimeSpan.Zero, result.Session!.Duration);
+        Assert.Equal(TimeSpan.Zero, result.Session.SessionStart!.Value.Offset);
+        Assert.Equal(8, (result.Session.SessionEnd!.Value - result.Session.SessionStart!.Value).TotalSeconds);
+        Assert.Empty(result.Session.KilledMonsters);
+        Assert.Empty(result.Session.LootedItems);
+    }
+
     [Theory]
     [InlineData("{")]
     [InlineData("not JSON")]

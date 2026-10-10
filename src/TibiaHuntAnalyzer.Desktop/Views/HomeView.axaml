@@ -24,5 +24,10 @@
                 MinWidth="280"
                 MinHeight="48"
                 HorizontalAlignment="Center" />
+        <Button Content="Backup e restauração"
+                Command="{Binding OpenBackupRestoreCommand}"
+                MinWidth="280"
+                MinHeight="48"
+                HorizontalAlignment="Center" />
     </StackPanel>
 </UserControl>

@@ -51,6 +51,14 @@ public partial class MainWindow : Window
             queryViewModel.CsvExportRequested += async (_, _) =>
                 await SaveCsvFileAsync(queryViewModel);
         }
+
+        if (_viewModel.CurrentViewModel is BackupRestoreViewModel backupRestoreViewModel)
+        {
+            backupRestoreViewModel.BackupRequested += async (_, _) =>
+                await SaveDatabaseBackupAsync(backupRestoreViewModel);
+            backupRestoreViewModel.RestoreRequested += async (_, _) =>
+                await SelectDatabaseBackupAsync(backupRestoreViewModel);
+        }
     }
 
     private async Task SelectJsonFileAsync(InsertHuntSessionViewModel viewModel)
@@ -146,6 +154,69 @@ public partial class MainWindow : Window
         catch (Exception exception)
         {
             viewModel.ReportCsvError(exception.Message);
+        }
+    }
+
+    private async Task SaveDatabaseBackupAsync(BackupRestoreViewModel viewModel)
+    {
+        try
+        {
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Create Tibia Hunt Analyzer database backup",
+                SuggestedFileName = $"tibia-hunt-analyzer-backup-{DateTimeOffset.Now:yyyyMMdd-HHmmss}.db",
+                DefaultExtension = "db",
+                FileTypeChoices =
+                [
+                    new FilePickerFileType("SQLite database backups")
+                    {
+                        Patterns = ["*.db", "*.sqlite"]
+                    }
+                ]
+            });
+
+            if (file is null)
+            {
+                return;
+            }
+
+            await using var stream = await file.OpenWriteAsync();
+            await viewModel.CreateBackupAsync(stream);
+        }
+        catch (Exception exception)
+        {
+            viewModel.ReportFileError(exception.Message);
+        }
+    }
+
+    private async Task SelectDatabaseBackupAsync(BackupRestoreViewModel viewModel)
+    {
+        try
+        {
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Select a Tibia Hunt Analyzer database backup",
+                AllowMultiple = false,
+                FileTypeFilter =
+                [
+                    new FilePickerFileType("SQLite database backups")
+                    {
+                        Patterns = ["*.db", "*.sqlite"]
+                    }
+                ]
+            });
+
+            if (files.Count == 0)
+            {
+                return;
+            }
+
+            await using var stream = await files[0].OpenReadAsync();
+            await viewModel.RestoreBackupAsync(stream);
+        }
+        catch (Exception exception)
+        {
+            viewModel.ReportFileError(exception.Message);
         }
     }
 }

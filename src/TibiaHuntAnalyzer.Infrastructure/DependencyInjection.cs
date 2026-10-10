@@ -5,6 +5,8 @@ using TibiaHuntAnalyzer.Application.Settings;
 using TibiaHuntAnalyzer.Application.Sessions;
 using TibiaHuntAnalyzer.Application.Csv;
 using TibiaHuntAnalyzer.Application.Analytics;
+using TibiaHuntAnalyzer.Application.Backups;
+using TibiaHuntAnalyzer.Infrastructure.Backups;
 using TibiaHuntAnalyzer.Infrastructure.Analytics;
 using TibiaHuntAnalyzer.Infrastructure.Csv;
 using TibiaHuntAnalyzer.Infrastructure.Persistence;
@@ -25,6 +27,8 @@ public static class DependencyInjection
         services.AddSingleton<IHuntSessionService, HuntSessionService>();
         services.AddSingleton<ICsvHuntSessionService, CsvHuntSessionService>();
         services.AddSingleton<IHuntAnalyticsService, HuntAnalyticsService>();
+        services.AddSingleton<IDatabaseBackupService>(
+            _ => new DatabaseBackupService(ApplicationDataPaths.GetDatabasePath()));
 
         return services;
     }

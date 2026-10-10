@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TibiaHuntAnalyzer.Application.Analytics;
+using TibiaHuntAnalyzer.Application.Backups;
 using TibiaHuntAnalyzer.Application.Csv;
 using TibiaHuntAnalyzer.Application.Imports;
 using TibiaHuntAnalyzer.Application.Sessions;
@@ -16,6 +17,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly IHuntSessionService _huntSessionService;
     private readonly ICsvHuntSessionService _csvHuntSessionService;
     private readonly IHuntAnalyticsService _huntAnalyticsService;
+    private readonly IDatabaseBackupService _databaseBackupService;
     private readonly JsonHuntSessionParser _jsonParser;
     private readonly TextHuntSessionParser _textParser;
 
@@ -24,6 +26,7 @@ public partial class MainViewModel : ViewModelBase
         IHuntSessionService huntSessionService,
         ICsvHuntSessionService csvHuntSessionService,
         IHuntAnalyticsService huntAnalyticsService,
+        IDatabaseBackupService databaseBackupService,
         JsonHuntSessionParser jsonParser,
         TextHuntSessionParser textParser)
     {
@@ -31,6 +34,7 @@ public partial class MainViewModel : ViewModelBase
         _huntSessionService = huntSessionService;
         _csvHuntSessionService = csvHuntSessionService;
         _huntAnalyticsService = huntAnalyticsService;
+        _databaseBackupService = databaseBackupService;
         _jsonParser = jsonParser;
         _textParser = textParser;
         CurrentViewModel = CreateHomeViewModel();
@@ -96,6 +100,13 @@ public partial class MainViewModel : ViewModelBase
         CurrentViewModel = viewModel;
     }
 
+    private void OpenBackupRestore()
+    {
+        var viewModel = new BackupRestoreViewModel(_databaseBackupService);
+        viewModel.ExitRequested += (_, _) => CurrentViewModel = CreateHomeViewModel();
+        CurrentViewModel = viewModel;
+    }
+
     partial void OnCurrentViewModelChanged(ViewModelBase value)
     {
         OnPropertyChanged(nameof(IsHome));
@@ -108,6 +119,7 @@ public partial class MainViewModel : ViewModelBase
         viewModel.SettingsRequested += async (_, _) => await OpenSettingsAsync();
         viewModel.QueryRequested += async (_, _) => await OpenQueryAsync();
         viewModel.AnalyticsRequested += async (_, _) => await OpenAnalyticsAsync();
+        viewModel.BackupRestoreRequested += (_, _) => OpenBackupRestore();
         return viewModel;
     }
 

@@ -230,7 +230,7 @@ Initial domain-model assumptions:
 - Source metrics and entity counts remain nullable when omitted by the imported data.
 - `Duration` is the source-reported hunt duration; elapsed time is separately derived from session start and end.
 - Item values are not modeled until the input formats establish whether a value is per-item or a total.
-- The initial JSON parser accepts a root object, case-insensitive documented metric keys, record arrays with `Name` plus an optional `Killed`/`Count` or `Amount`/`Quantity`/`Count`, invariant-culture numbers (as strings or JSON numbers), ISO-compatible timestamps, and `TimeSpan`/clock/unit duration strings. Missing metrics and lists remain null and empty respectively; malformed present values are errors.
+- The initial JSON parser accepts a root object, case-insensitive documented metric keys, record arrays with `Name` plus an optional `Killed`/`Count` or `Amount`/`Quantity`/`Count`, invariant-culture numbers (as strings or JSON numbers), ISO-compatible timestamps and Tibia's `yyyy-MM-dd, HH:mm:ss` timestamp representation (interpreted as UTC when no offset is present), and `TimeSpan`/clock/unit duration strings including `00:00h`. Missing metrics and lists remain null and empty respectively; malformed present values are errors.
 - The initial text parser supports the supplied `From yyyy-MM-dd, HH:mm:ss to ...` header, `Session:`/`Session length:` duration, colon-separated metrics, and one monster/item entry per line in `Nx name` form. It interprets timestamps without an offset using the computer's local timezone at import. Numbers use invariant formatting with comma thousands separators; absent values stay null, and `None` or empty list sections produce empty lists.
 - Hunt sessions are stored as relational rows with statistics in typed columns and monster/item rows in child tables; the original source format and text are retained. Session writes use one SQLite transaction and do not add uniqueness constraints that would reject duplicate sessions.
 - The insertion screen loads only active characters and hunt locations, parses JSON files or pasted text before saving, and reports parser/validation/persistence errors without claiming success before the save completes. Clearing or exiting with unsaved form input requires a second confirmation.
@@ -253,6 +253,8 @@ Requirements:
 - Plan for local database backup and restoration.
 
 Do not store all session data exclusively as an opaque JSON document.
+
+The home screen's backup/restore page exports a consistent SQLite backup to a user-selected `.db` or `.sqlite` file. Restore requires explicit confirmation, stages and validates the selected SQLite file and its application schema, applies available EF migrations to the staged copy, and checks referential integrity before changing the live database. Before restoring, the current database is kept as a timestamped `tibia-hunt-analyzer-pre-restore-*.db` file beside the application database. A failed restore attempts to roll back from that safety copy; failures are reported rather than treated as success.
 
 ## 11. CSV import and export
 

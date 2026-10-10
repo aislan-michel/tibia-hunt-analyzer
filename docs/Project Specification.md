@@ -230,6 +230,8 @@ Initial domain-model assumptions:
 - Source metrics and entity counts remain nullable when omitted by the imported data.
 - `Duration` is the source-reported hunt duration; elapsed time is separately derived from session start and end.
 - Item values are not modeled until the input formats establish whether a value is per-item or a total.
+- The initial JSON parser accepts a root object, case-insensitive documented metric keys, record arrays with `Name` plus an optional `Killed`/`Count` or `Amount`/`Quantity`/`Count`, invariant-culture numbers (as strings or JSON numbers), ISO-compatible timestamps, and `TimeSpan`/clock/unit duration strings. Missing metrics and lists remain null and empty respectively; malformed present values are errors.
+- The initial text parser supports the supplied `From yyyy-MM-dd, HH:mm:ss to ...` header, `Session:`/`Session length:` duration, colon-separated metrics, and one monster/item entry per line in `Nx name` form. It interprets timestamps without an offset using the computer's local timezone at import. Numbers use invariant formatting with comma thousands separators; absent values stay null, and `None` or empty list sections produce empty lists.
 
 ## 10. Persistence and data integrity
 

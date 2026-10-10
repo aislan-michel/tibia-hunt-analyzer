@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using TibiaHuntAnalyzer.Desktop.ViewModels;
 using TibiaHuntAnalyzer.Desktop.Views;
+using TibiaHuntAnalyzer.Infrastructure;
 using System;
 
 namespace TibiaHuntAnalyzer.Desktop;
@@ -32,7 +33,10 @@ sealed class Program
             .LogToTrace();
 
     private static ServiceProvider CreateServiceProvider()
-        => new ServiceCollection()
-            .AddSingleton<MainViewModel>()
-            .BuildServiceProvider();
+    {
+        var services = new ServiceCollection();
+        services.AddInfrastructure();
+        services.AddSingleton<MainViewModel>();
+        return services.BuildServiceProvider();
+    }
 }

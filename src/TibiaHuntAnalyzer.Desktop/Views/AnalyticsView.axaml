@@ -1,0 +1,198 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TibiaHuntAnalyzer.Desktop.ViewModels"
+             x:Class="TibiaHuntAnalyzer.Desktop.Views.AnalyticsView"
+             x:DataType="vm:AnalyticsViewModel">
+    <Grid RowDefinitions="Auto,*,Auto"
+          RowSpacing="12"
+          Margin="0,24,0,0">
+        <StackPanel Grid.Row="0" Spacing="12">
+            <TextBlock Text="Análise de Hunt Analyzer"
+                       FontSize="24"
+                       FontWeight="SemiBold" />
+
+            <Grid ColumnDefinitions="*,*"
+                  RowDefinitions="Auto,Auto"
+                  ColumnSpacing="12"
+                  RowSpacing="8">
+                <ComboBox Grid.Row="0"
+                          Grid.Column="0"
+                          ItemsSource="{Binding Characters}"
+                          SelectedItem="{Binding SelectedCharacter}"
+                          AutomationProperties.Name="Filtrar por personagem">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:AnalyticsFilterOption">
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <ComboBox Grid.Row="0"
+                          Grid.Column="1"
+                          ItemsSource="{Binding HuntLocations}"
+                          SelectedItem="{Binding SelectedHuntLocation}"
+                          AutomationProperties.Name="Filtrar por local da hunt">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:AnalyticsFilterOption">
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBox Grid.Row="1"
+                         Grid.Column="0"
+                         PlaceholderText="Data inicial (AAAA-MM-DD)"
+                         Text="{Binding StartDateFilter}" />
+                <TextBox Grid.Row="1"
+                         Grid.Column="1"
+                         PlaceholderText="Data final (AAAA-MM-DD)"
+                         Text="{Binding EndDateFilter}" />
+            </Grid>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Analisar"
+                        Command="{Binding AnalyzeCommand}" />
+                <Button Content="Limpar filtros"
+                        Command="{Binding ClearFiltersCommand}" />
+            </StackPanel>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="16">
+                <TextBlock Text="{Binding SessionCount, StringFormat='Sessões consideradas: {0}'}"
+                           FontSize="18"
+                           FontWeight="SemiBold" />
+
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Resultados gerais"
+                               FontSize="20"
+                               FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding BalanceTotal, StringFormat='Balance total: {0}'}" />
+                    <TextBlock Text="{Binding AverageBalance, StringFormat='Balance médio por sessão: {0}'}" />
+                    <TextBlock Text="{Binding AverageBalancePerHour, StringFormat='Balance/h médio calculado: {0}'}" />
+                    <TextBlock Text="{Binding XpTotal, StringFormat='XP Gain total: {0}'}" />
+                    <TextBlock Text="{Binding AverageReportedXpPerHour, StringFormat='XP/h médio informado pelo jogo: {0}'}" />
+                    <TextBlock Text="{Binding AverageCalculatedXpPerHour, StringFormat='XP/h médio calculado: {0}'}" />
+                    <TextBlock Text="{Binding RawXpTotal, StringFormat='Raw XP Gain total: {0}'}" />
+                    <TextBlock Text="{Binding AverageReportedRawXpPerHour, StringFormat='Raw XP/h médio informado pelo jogo: {0}'}" />
+                    <TextBlock Text="{Binding AverageCalculatedRawXpPerHour, StringFormat='Raw XP/h médio calculado: {0}'}" />
+                </StackPanel>
+
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Comparação por personagem"
+                               FontSize="20"
+                               FontWeight="SemiBold" />
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                        <StackPanel MinWidth="1250">
+                            <Grid ColumnDefinitions="2*,*,*,*,*,*,*,*,*,*,*"
+                                  Margin="4,0,4,6">
+                                <TextBlock Grid.Column="0" Text="Personagem" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="1" Text="Sessões" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="2" Text="Balance total" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="3" Text="Balance médio" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="4" Text="Balance/h médio" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="5" Text="XP total" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="6" Text="XP/h informado" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="7" Text="XP/h calculado" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="8" Text="Raw XP total" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="9" Text="Raw XP/h informado" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="10" Text="Raw XP/h calculado" FontWeight="SemiBold" />
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding CharacterResults}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:AnalyticsGroupDisplay">
+                                        <Grid ColumnDefinitions="2*,*,*,*,*,*,*,*,*,*,*"
+                                              Margin="4,5">
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Sessions}" />
+                                            <TextBlock Grid.Column="2" Text="{Binding BalanceTotal}" />
+                                            <TextBlock Grid.Column="3" Text="{Binding AverageBalance}" />
+                                            <TextBlock Grid.Column="4" Text="{Binding AverageBalancePerHour}" />
+                                            <TextBlock Grid.Column="5" Text="{Binding XpTotal}" />
+                                            <TextBlock Grid.Column="6" Text="{Binding AverageReportedXpPerHour}" />
+                                            <TextBlock Grid.Column="7" Text="{Binding AverageCalculatedXpPerHour}" />
+                                            <TextBlock Grid.Column="8" Text="{Binding RawXpTotal}" />
+                                            <TextBlock Grid.Column="9" Text="{Binding AverageReportedRawXpPerHour}" />
+                                            <TextBlock Grid.Column="10" Text="{Binding AverageCalculatedRawXpPerHour}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </StackPanel>
+
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Comparação por local da hunt"
+                               FontSize="20"
+                               FontWeight="SemiBold" />
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                        <StackPanel MinWidth="1250">
+                            <Grid ColumnDefinitions="2*,*,*,*,*,*,*,*,*,*,*"
+                                  Margin="4,0,4,6">
+                                <TextBlock Grid.Column="0" Text="Local" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="1" Text="Sessões" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="2" Text="Balance total" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="3" Text="Balance médio" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="4" Text="Balance/h médio" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="5" Text="XP total" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="6" Text="XP/h informado" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="7" Text="XP/h calculado" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="8" Text="Raw XP total" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="9" Text="Raw XP/h informado" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="10" Text="Raw XP/h calculado" FontWeight="SemiBold" />
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding HuntLocationResults}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:AnalyticsGroupDisplay">
+                                        <Grid ColumnDefinitions="2*,*,*,*,*,*,*,*,*,*,*"
+                                              Margin="4,5">
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Sessions}" />
+                                            <TextBlock Grid.Column="2" Text="{Binding BalanceTotal}" />
+                                            <TextBlock Grid.Column="3" Text="{Binding AverageBalance}" />
+                                            <TextBlock Grid.Column="4" Text="{Binding AverageBalancePerHour}" />
+                                            <TextBlock Grid.Column="5" Text="{Binding XpTotal}" />
+                                            <TextBlock Grid.Column="6" Text="{Binding AverageReportedXpPerHour}" />
+                                            <TextBlock Grid.Column="7" Text="{Binding AverageCalculatedXpPerHour}" />
+                                            <TextBlock Grid.Column="8" Text="{Binding RawXpTotal}" />
+                                            <TextBlock Grid.Column="9" Text="{Binding AverageReportedRawXpPerHour}" />
+                                            <TextBlock Grid.Column="10" Text="{Binding AverageCalculatedRawXpPerHour}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </StackPanel>
+
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Progressão histórica de nível"
+                               FontSize="20"
+                               FontWeight="SemiBold" />
+                    <ItemsControl ItemsSource="{Binding LevelProgression}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:CharacterLevelDisplay">
+                                <Grid ColumnDefinitions="2*,*,2*"
+                                      Margin="4,5">
+                                    <TextBlock Grid.Column="0" Text="{Binding CharacterName}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Level}" />
+                                    <TextBlock Grid.Column="2" Text="{Binding SessionStart}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <TextBlock Grid.Column="0"
+                       Text="{Binding StatusMessage}"
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center"
+                       AutomationProperties.LiveSetting="Polite" />
+            <Button Grid.Column="1"
+                    Content="Voltar"
+                    Command="{Binding ExitCommand}"
+                    MinWidth="100" />
+        </Grid>
+    </Grid>
+</UserControl>

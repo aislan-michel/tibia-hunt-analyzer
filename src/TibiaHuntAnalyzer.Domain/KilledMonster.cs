@@ -2,6 +2,11 @@ namespace TibiaHuntAnalyzer.Domain;
 
 public sealed class KilledMonster
 {
+    private KilledMonster()
+    {
+        Name = null!;
+    }
+
     public KilledMonster(string name, long? count)
     {
         Id = Guid.NewGuid();

@@ -2,6 +2,10 @@ namespace TibiaHuntAnalyzer.Domain;
 
 public sealed class HuntStatistics
 {
+    private HuntStatistics()
+    {
+    }
+
     public HuntStatistics(
         decimal? balance = null,
         long? damage = null,

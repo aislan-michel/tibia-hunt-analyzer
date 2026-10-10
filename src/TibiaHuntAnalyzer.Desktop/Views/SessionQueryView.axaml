@@ -1,0 +1,195 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TibiaHuntAnalyzer.Desktop.ViewModels"
+             x:Class="TibiaHuntAnalyzer.Desktop.Views.SessionQueryView"
+             x:DataType="vm:SessionQueryViewModel">
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto"
+          RowSpacing="12"
+          Margin="0,24,0,0">
+        <TextBlock Grid.Row="0"
+                   Text="Consultar Hunt Analyzer"
+                   FontSize="24"
+                   FontWeight="SemiBold" />
+
+        <Grid Grid.Row="1"
+              ColumnDefinitions="*,*,*,*,Auto"
+              ColumnSpacing="8">
+            <TextBox Grid.Column="0"
+                     PlaceholderText="Personagem"
+                     Text="{Binding CharacterFilter}" />
+            <TextBox Grid.Column="1"
+                     PlaceholderText="Local da hunt"
+                     Text="{Binding HuntLocationFilter}" />
+            <TextBox Grid.Column="2"
+                     PlaceholderText="Data inicial (AAAA-MM-DD)"
+                     Text="{Binding StartDateFilter}" />
+            <TextBox Grid.Column="3"
+                     PlaceholderText="Data final (AAAA-MM-DD)"
+                     Text="{Binding EndDateFilter}" />
+            <Button Grid.Column="4"
+                    Content="Limpar filtros"
+                    Command="{Binding ClearFiltersCommand}" />
+        </Grid>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    Spacing="8">
+            <Button Content="Importar CSV"
+                    Command="{Binding ImportCsvCommand}"
+                    AutomationProperties.Name="Importar sessões de arquivo CSV" />
+            <Button Content="Exportar CSV"
+                    Command="{Binding ExportCsvCommand}"
+                    AutomationProperties.Name="Exportar sessões para arquivo CSV" />
+        </StackPanel>
+
+        <Grid Grid.Row="3">
+            <Grid RowDefinitions="Auto,*"
+                  IsVisible="{Binding !IsDetailsVisible}">
+                <Grid Grid.Row="0"
+                      ColumnDefinitions="2*,*,2*,2*,2*"
+                      Margin="4,0,4,6">
+                    <Button Grid.Column="0" Content="Personagem" Click="OnSortCharacterClick" />
+                    <Button Grid.Column="1" Content="Nível" Click="OnSortLevelClick" />
+                    <Button Grid.Column="2" Content="Local da hunt" Click="OnSortLocationClick" />
+                    <Button Grid.Column="3" Content="Início" Click="OnSortStartClick" />
+                    <Button Grid.Column="4" Content="Fim" Click="OnSortEndClick" />
+                </Grid>
+
+                <ListBox Grid.Row="1"
+                         ItemsSource="{Binding Sessions}"
+                         SelectedItem="{Binding SelectedSession}"
+                         SelectionMode="Single"
+                         SelectionChanged="OnSelectionChanged"
+                         AutomationProperties.Name="Sessões registradas">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="2*,*,2*,2*,2*"
+                                  Margin="4,8">
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding CharacterName}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding CharacterLevel}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding HuntLocationName}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="3"
+                                           Text="{Binding SessionStartDisplay}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="4"
+                                           Text="{Binding SessionEndDisplay}"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+
+            <ScrollViewer IsVisible="{Binding IsDetailsVisible}">
+                <StackPanel Spacing="10">
+                    <Button Content="Voltar à lista"
+                            Command="{Binding BackToSessionsCommand}"
+                            HorizontalAlignment="Left" />
+                    <TextBlock Text="Detalhes da sessão"
+                               FontSize="20"
+                               FontWeight="SemiBold" />
+
+                    <Grid ColumnDefinitions="Auto,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                          ColumnSpacing="12"
+                          RowSpacing="4">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Personagem:" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedDetails.CharacterName}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Nível:" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedDetails.CharacterLevel}" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Local:" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedDetails.HuntLocationName}" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Início:" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="3" Grid.Column="1"
+                                   Text="{Binding SelectedDetails.SessionStart, StringFormat='{}{0:g}'}" />
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Fim:" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="4" Grid.Column="1"
+                                   Text="{Binding SelectedDetails.SessionEnd, StringFormat='{}{0:g}'}" />
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Duração da hunt:" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="5" Grid.Column="1"
+                                   Text="{Binding SelectedDetails.Duration, StringFormat='{}{0:c}'}" />
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Tempo entre início e fim:" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="6" Grid.Column="1"
+                                   Text="{Binding SelectedDetails.ElapsedTime, StringFormat='{}{0:c}'}" />
+                    </Grid>
+
+                    <TextBlock Text="Estatísticas" FontSize="18" FontWeight="SemiBold" />
+                    <Grid ColumnDefinitions="*,*,*,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                          ColumnSpacing="12"
+                          RowSpacing="4">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Balance" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedDetails.Statistics.Balance}" />
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Loot" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding SelectedDetails.Statistics.Loot}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Supplies" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedDetails.Statistics.Supplies}" />
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="Damage" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding SelectedDetails.Statistics.Damage}" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Damage/h" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedDetails.Statistics.DamagePerHour}" />
+                        <TextBlock Grid.Row="2" Grid.Column="2" Text="Healing" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding SelectedDetails.Statistics.Healing}" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Healing/h" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedDetails.Statistics.HealingPerHour}" />
+                        <TextBlock Grid.Row="3" Grid.Column="2" Text="XP Gain" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="3" Grid.Column="3" Text="{Binding SelectedDetails.Statistics.XpGain}" />
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="XP/h" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedDetails.Statistics.XpPerHour}" />
+                        <TextBlock Grid.Row="4" Grid.Column="2" Text="Raw XP Gain" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="4" Grid.Column="3" Text="{Binding SelectedDetails.Statistics.RawXpGain}" />
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Raw XP/h" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedDetails.Statistics.RawXpPerHour}" />
+                        <TextBlock Grid.Row="5" Grid.Column="2" Text="Formato" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="5" Grid.Column="3" Text="{Binding SelectedDetails.InputFormat}" />
+                    </Grid>
+
+                    <TextBlock Text="Monstros mortos" FontSize="18" FontWeight="SemiBold" />
+                    <ItemsControl ItemsSource="{Binding DetailMonsters}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Display}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="Itens coletados" FontSize="18" FontWeight="SemiBold" />
+                    <ItemsControl ItemsSource="{Binding DetailItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Display}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="Conteúdo original"
+                               FontSize="18"
+                               FontWeight="SemiBold" />
+                    <TextBox Text="{Binding SelectedDetails.OriginalInput}"
+                             IsReadOnly="True"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             MinHeight="100" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <Grid Grid.Row="4" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <TextBlock Grid.Column="0"
+                       Text="{Binding StatusMessage}"
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center"
+                       AutomationProperties.LiveSetting="Polite" />
+            <Button Grid.Column="1"
+                    Content="Sair"
+                    Command="{Binding ExitCommand}"
+                    MinWidth="100" />
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TibiaHuntAnalyzer.Desktop.ViewModels"
+             x:Class="TibiaHuntAnalyzer.Desktop.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+    <Grid RowDefinitions="Auto,*,Auto,Auto"
+          ColumnDefinitions="*,*"
+          ColumnSpacing="24"
+          RowSpacing="16"
+          Margin="0,24,0,0">
+        <TextBlock Grid.Row="0"
+                   Grid.ColumnSpan="2"
+                   Text="Configurações"
+                   FontSize="24"
+                   FontWeight="SemiBold" />
+
+        <StackPanel Grid.Row="1" Grid.Column="0" Spacing="8">
+            <TextBlock Text="Personagens" FontSize="18" FontWeight="SemiBold" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBox Grid.Column="0"
+                         PlaceholderText="Nome do personagem"
+                         Text="{Binding NewCharacterName}" />
+                <Button Grid.Column="1"
+                        Content="Adicionar"
+                        Command="{Binding AddCharacterCommand}" />
+            </Grid>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Characters}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,2">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding Name}"
+                                         IsEnabled="{Binding IsActive}" />
+                                <CheckBox Grid.Column="1"
+                                          Content="Ativo"
+                                          IsChecked="{Binding IsActive}"
+                                          VerticalAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="8">
+            <TextBlock Text="Locais de hunt" FontSize="18" FontWeight="SemiBold" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBox Grid.Column="0"
+                         PlaceholderText="Nome do local"
+                         Text="{Binding NewHuntLocationName}" />
+                <Button Grid.Column="1"
+                        Content="Adicionar"
+                        Command="{Binding AddHuntLocationCommand}" />
+            </Grid>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding HuntLocations}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,2">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding Name}"
+                                         IsEnabled="{Binding IsActive}" />
+                                <CheckBox Grid.Column="1"
+                                          Content="Ativo"
+                                          IsChecked="{Binding IsActive}"
+                                          VerticalAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </StackPanel>
+
+        <TextBlock Grid.Row="2"
+                   Grid.ColumnSpan="2"
+                   Text="{Binding StatusMessage}"
+                   AutomationProperties.LiveSetting="Polite"
+                   TextWrapping="Wrap" />
+
+        <StackPanel Grid.Row="3"
+                    Grid.ColumnSpan="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="8">
+            <Button Content="Sair"
+                    Command="{Binding ExitCommand}"
+                    MinWidth="100" />
+            <Button Content="Salvar"
+                    Command="{Binding SaveCommand}"
+                    MinWidth="100" />
+        </StackPanel>
+    </Grid>
+</UserControl>

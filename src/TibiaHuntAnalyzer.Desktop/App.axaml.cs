@@ -26,10 +26,7 @@ public partial class App : Avalonia.Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = _services.GetRequiredService<MainViewModel>(),
-            };
+            desktop.MainWindow = _services.GetRequiredService<MainWindow>();
         }
 
         base.OnFrameworkInitializationCompleted();

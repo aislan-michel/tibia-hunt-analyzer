@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\TibiaHuntAnalyzer.Application\TibiaHuntAnalyzer.Application.csproj" />
     <ProjectReference Include="..\..\src\TibiaHuntAnalyzer.Domain\TibiaHuntAnalyzer.Domain.csproj" />
+    <ProjectReference Include="..\..\src\TibiaHuntAnalyzer.Desktop\TibiaHuntAnalyzer.Desktop.csproj" />
   </ItemGroup>
 
 </Project>

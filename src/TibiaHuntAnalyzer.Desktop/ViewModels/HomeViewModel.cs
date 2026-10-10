@@ -1,0 +1,27 @@
+using System;
+using CommunityToolkit.Mvvm.Input;
+
+namespace TibiaHuntAnalyzer.Desktop.ViewModels;
+
+public sealed partial class HomeViewModel : ViewModelBase
+{
+    public event EventHandler? InsertRequested;
+
+    public event EventHandler? SettingsRequested;
+
+    public event EventHandler? QueryRequested;
+
+    public event EventHandler? AnalyticsRequested;
+
+    [RelayCommand]
+    private void Insert() => InsertRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
+    private void OpenSettings() => SettingsRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
+    private void Query() => QueryRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
+    private void OpenAnalytics() => AnalyticsRequested?.Invoke(this, EventArgs.Empty);
+}

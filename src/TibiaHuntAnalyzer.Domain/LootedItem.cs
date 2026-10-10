@@ -2,6 +2,11 @@ namespace TibiaHuntAnalyzer.Domain;
 
 public sealed class LootedItem
 {
+    private LootedItem()
+    {
+        Name = null!;
+    }
+
     public LootedItem(string name, long? quantity)
     {
         Id = Guid.NewGuid();

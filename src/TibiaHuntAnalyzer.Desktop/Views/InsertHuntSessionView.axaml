@@ -1,0 +1,113 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TibiaHuntAnalyzer.Desktop.ViewModels"
+             x:Class="TibiaHuntAnalyzer.Desktop.Views.InsertHuntSessionView"
+             x:DataType="vm:InsertHuntSessionViewModel">
+    <Grid RowDefinitions="Auto,*,Auto,Auto"
+          ColumnDefinitions="*,*"
+          ColumnSpacing="20"
+          RowSpacing="16"
+          Margin="0,24,0,0">
+        <TextBlock Grid.Row="0"
+                   Grid.ColumnSpan="2"
+                   Text="Inserir Hunt Analyzer"
+                   FontSize="24"
+                   FontWeight="SemiBold" />
+
+        <Grid Grid.Row="1"
+              Grid.ColumnSpan="2"
+              ColumnDefinitions="*,*"
+              RowDefinitions="Auto,Auto,Auto,Auto,Auto,*"
+              ColumnSpacing="16"
+              RowSpacing="10">
+            <StackPanel Grid.Row="0" Grid.Column="0" Spacing="4">
+                <TextBlock Text="Personagem" />
+                <ComboBox ItemsSource="{Binding Characters}"
+                          SelectedItem="{Binding SelectedCharacter}"
+                          PlaceholderText="Selecione um personagem">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel Grid.Row="0" Grid.Column="1" Spacing="4">
+                <TextBlock Text="Nível do personagem" />
+                <TextBox Text="{Binding CharacterLevelText}"
+                         PlaceholderText="Digite o nível"
+                         MaxLength="10" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Grid.Column="0" Spacing="4">
+                <TextBlock Text="Local da hunt" />
+                <ComboBox ItemsSource="{Binding HuntLocations}"
+                          SelectedItem="{Binding SelectedHuntLocation}"
+                          PlaceholderText="Selecione um local">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
+                <TextBlock Text="Formato de entrada" />
+                <ComboBox SelectedIndex="{Binding SelectedInputFormatIndex}">
+                    <ComboBoxItem Content="Arquivo JSON" />
+                    <ComboBoxItem Content="Texto copiado do Tibia" />
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2"
+                        Grid.ColumnSpan="2"
+                        Orientation="Horizontal"
+                        Spacing="10"
+                        IsVisible="{Binding IsJsonFile}">
+                <Button Content="Selecionar arquivo JSON"
+                        Command="{Binding SelectJsonFileCommand}" />
+                <TextBlock Text="{Binding SelectedFileName}"
+                           VerticalAlignment="Center"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="2"
+                        Grid.ColumnSpan="2"
+                        Spacing="4"
+                        IsVisible="{Binding IsTextInput}">
+                <TextBlock Text="Texto do Hunt Analyzer" />
+                <TextBox Text="{Binding InputContent}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MinHeight="160"
+                         VerticalContentAlignment="Top"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         AutomationProperties.Name="Texto copiado do Hunt Analyzer" />
+            </StackPanel>
+        </Grid>
+
+        <TextBlock Grid.Row="2"
+                   Grid.ColumnSpan="2"
+                   Text="{Binding StatusMessage}"
+                   TextWrapping="Wrap"
+                   AutomationProperties.LiveSetting="Polite" />
+
+        <StackPanel Grid.Row="3"
+                    Grid.ColumnSpan="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="8">
+            <Button Content="Sair"
+                    Command="{Binding ExitCommand}"
+                    MinWidth="100" />
+            <Button Content="Limpar"
+                    Command="{Binding ClearCommand}"
+                    MinWidth="100" />
+            <Button Content="Enviar"
+                    Command="{Binding SubmitCommand}"
+                    MinWidth="100" />
+        </StackPanel>
+    </Grid>
+</UserControl>

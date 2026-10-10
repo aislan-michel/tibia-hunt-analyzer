@@ -1,8 +1,11 @@
 ﻿using Avalonia;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TibiaHuntAnalyzer.Desktop.ViewModels;
 using TibiaHuntAnalyzer.Desktop.Views;
 using TibiaHuntAnalyzer.Infrastructure;
+using TibiaHuntAnalyzer.Infrastructure.Persistence;
+using TibiaHuntAnalyzer.Application.Imports;
 using System;
 
 namespace TibiaHuntAnalyzer.Desktop;
@@ -16,6 +19,12 @@ sealed class Program
     public static void Main(string[] args)
     {
         using var services = CreateServiceProvider();
+        using (var dbContext = services.GetRequiredService<IDbContextFactory<HuntAnalyzerDbContext>>()
+                   .CreateDbContext())
+        {
+            dbContext.Database.Migrate();
+        }
+
         BuildAvaloniaApp(services).StartWithClassicDesktopLifetime(args);
     }
 
@@ -36,7 +45,10 @@ sealed class Program
     {
         var services = new ServiceCollection();
         services.AddInfrastructure();
+        services.AddSingleton<JsonHuntSessionParser>();
+        services.AddSingleton<TextHuntSessionParser>();
         services.AddSingleton<MainViewModel>();
+        services.AddSingleton<MainWindow>();
         return services.BuildServiceProvider();
     }
 }

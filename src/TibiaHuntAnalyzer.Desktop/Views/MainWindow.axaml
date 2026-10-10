@@ -3,21 +3,23 @@
         xmlns:vm="using:TibiaHuntAnalyzer.Desktop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="650"
         x:Class="TibiaHuntAnalyzer.Desktop.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="Tibia Hunt Analyzer">
+        Icon="/Assets/tibia-hunt-analyzer.ico"
+        Title="Tibia Hunt Analyzer"
+        MinWidth="640"
+        MinHeight="480">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
-    </Design.DataContext>
+    <Grid RowDefinitions="Auto,*" Margin="24">
+        <Button Grid.Row="0"
+                Content="⚙ Configurações"
+                Command="{Binding OpenSettingsCommand}"
+                HorizontalAlignment="Right"
+                IsVisible="{Binding IsHome}"
+                AutomationProperties.Name="Configurações" />
 
-    <TextBlock Text="{Binding Greeting}"
-               FontSize="24"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center" />
-
+        <ContentControl Grid.Row="1"
+                        Content="{Binding CurrentViewModel}" />
+    </Grid>
 </Window>

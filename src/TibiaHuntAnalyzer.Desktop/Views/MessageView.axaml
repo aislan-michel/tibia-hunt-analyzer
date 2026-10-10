@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TibiaHuntAnalyzer.Desktop.ViewModels"
+             x:Class="TibiaHuntAnalyzer.Desktop.Views.MessageView"
+             x:DataType="vm:MessageViewModel">
+    <StackPanel HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="16">
+        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+        <Button Content="Voltar"
+                Command="{Binding CloseCommand}"
+                HorizontalAlignment="Center" />
+    </StackPanel>
+</UserControl>

@@ -6,7 +6,7 @@
         mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="650"
         x:Class="TibiaHuntAnalyzer.Desktop.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Icon="/Assets/tibia-hunt-analyzer.ico"
+        Icon="/Assets/tibia-hunt-analyzer-icon.ico"
         Title="Tibia Hunt Analyzer"
         MinWidth="640"
         MinHeight="480">

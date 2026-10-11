@@ -264,6 +264,11 @@ Generated_Code/
 # because we have git ;-)
 _UpgradeReport_Files/
 Backup*/
+# Preserve source-tree backup directories that belong to the application itself.
+!src/**/[Bb]ackup*/
+!src/**/[Bb]ackup*/**
+!src/**/[Bb]ackups/
+!src/**/[Bb]ackups/**
 UpgradeLog*.XML
 UpgradeLog*.htm
 ServiceFabricBackup/

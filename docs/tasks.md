@@ -7,6 +7,15 @@
 - [x] Document the proposed database initialization strategy: validate before atomic config persistence; use a single startup-resolved path; activate path changes after restart.
 - [x] Record implementation sequence, affected areas, risks, and verification below.
 - [x] Obtain approval of this implementation plan before changing application code.
+- [x] Audit the .gitignore behavior for backup directories under `src` and narrow the exclusion so source-tree backup folders remain visible while repo-level backup exclusions continue to work.
+
+### Phase 1 audit findings
+
+- The broad `.gitignore` rule `Backup*/` at `.gitignore:266` was ignoring `src/TibiaHuntAnalyzer.Infrastructure/Backups/DatabaseBackupService.cs` as confirmed by `git check-ignore -v`.
+- The `Backups` folder is part of the application source tree and must remain tracked, so the source-tree exclusion must be narrowed with an explicit unignore rule under `src`.
+- The navigation model is mostly consistent: home screen shutdown is handled by `MainViewModel.ApplicationExitRequested`, while secondary screens return to the previous VM via `ExitRequested` handlers.
+- Character and hunt-location CRUD remain separated from settings and from the scan history persistence flow; the current architecture matches the requested partitioning.
+- The repository does not currently show stale CSV implementation code, but the project should continue to audit for obsolete interchange references before any further refactors.
 
 ## Phase 2: Implement after approval
 

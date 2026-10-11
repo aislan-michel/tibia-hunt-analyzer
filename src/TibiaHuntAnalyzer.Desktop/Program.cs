@@ -23,8 +23,6 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        var configurationPath = ApplicationDataPaths.GetConfigurationFilePath();
-        var isExplicitlyConfigured = File.Exists(configurationPath);
         string databasePath;
         DatabaseStartupStatus startupStatus;
         try
@@ -45,7 +43,7 @@ sealed class Program
             try
             {
                 DatabasePathCompatibility
-                    .InitializeConfiguredDatabaseAsync(databasePath, isExplicitlyConfigured)
+                    .InitializeConfiguredDatabaseAsync(databasePath)
                     .GetAwaiter()
                     .GetResult();
             }

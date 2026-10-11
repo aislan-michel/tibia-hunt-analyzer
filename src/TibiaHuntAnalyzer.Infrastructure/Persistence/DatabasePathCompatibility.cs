@@ -177,18 +177,10 @@ public static class DatabasePathCompatibility
 
     public static async Task InitializeConfiguredDatabaseAsync(
         string databasePath,
-        bool isExplicitlyConfigured,
         CancellationToken cancellationToken = default)
     {
         if (!File.Exists(databasePath))
         {
-            if (isExplicitlyConfigured)
-            {
-                throw new FileNotFoundException(
-                    "The configured database is missing. Choose a valid database path in Settings.",
-                    databasePath);
-            }
-
             await InitializeNewDatabaseAsync(databasePath, cancellationToken);
             return;
         }

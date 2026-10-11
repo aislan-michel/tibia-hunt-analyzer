@@ -112,16 +112,14 @@ public sealed class DatabasePathSettingsServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Startup_RejectsMissingExplicitlyConfiguredDatabaseInsteadOfCreatingIt()
+    public async Task Startup_CreatesMissingConfiguredDatabase()
     {
         var missingPath = Path.Combine(_directory, "deleted.db");
 
-        await Assert.ThrowsAsync<FileNotFoundException>(
-            () => DatabasePathCompatibility.InitializeConfiguredDatabaseAsync(
-                missingPath,
-                isExplicitlyConfigured: true));
+        await DatabasePathCompatibility.InitializeConfiguredDatabaseAsync(missingPath);
 
-        Assert.False(File.Exists(missingPath));
+        Assert.True(File.Exists(missingPath));
+        await DatabasePathCompatibility.ValidateExistingDatabaseAsync(missingPath);
     }
 
     private DatabasePathSettingsService CreateService() =>

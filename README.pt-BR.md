@@ -219,7 +219,7 @@ Arquivos relevantes:
 
 ## Licença
 
-Nenhum arquivo de licença está presente no repositório no momento desta revisão. Antes de distribuir o projeto publicamente ou reutilizá-lo em contexto comercial, confirme os termos de licenciamento pretendidos e adicione o arquivo de licença apropriado, se necessário.
+Este projeto está licenciado sob a MIT License. Consulte [LICENSE](LICENSE) para ver o texto completo.
 
 ## Agradecimentos
 

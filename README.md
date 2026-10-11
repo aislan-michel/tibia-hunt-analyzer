@@ -219,7 +219,7 @@ Relevant files:
 
 ## License
 
-No license file is present in the repository at the time of this review. Before distributing the project publicly or reusing it in a commercial context, confirm the intended licensing terms and add the appropriate license file if needed.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for the full text.
 
 ## Acknowledgements
 

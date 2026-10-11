@@ -52,6 +52,23 @@
 - Source, test, project-manifest, and product-specification searches found no remaining CSV import/export surfaces.
 - Interactive visual smoke-launch remains unverified.
 
+## Phase 4: Windows publish script audit and plan
+
+- [ ] Confirm the exact application project, runtime target, and runtime dependency assumptions for Windows publication.
+- [ ] Decide whether the published app should be self-contained and whether single-file packaging is appropriate for the Avalonia desktop app.
+- [ ] Add a repeatable Windows PowerShell publication script under `scripts/` that resolves the repo root reliably and publishes `Release`/`win-x64` to a predictable output directory.
+- [ ] Verify the published `.exe` exists, the output folder contains required runtime files, and the script returns a nonzero code when publishing fails.
+- [ ] Document prerequisites, output directory, launch instructions, and any runtime limitations in the repository documentation.
+
+### Audit findings for publication
+
+- The concrete desktop entry project is `src/TibiaHuntAnalyzer.Desktop/TibiaHuntAnalyzer.Desktop.csproj`.
+- It targets `net10.0` and emits a `WinExe` using Avalonia Desktop and Avalonia themes/assets; this is a standard native Windows desktop app and does not require a development server or a subsequently running `dotnet run` host.
+- The app stores its database in the per-user `LocalApplicationData\TibiaHuntAnalyzer` folder via `ApplicationDataPaths.GetDefaultDatabasePath()`, and it persists a separate config file with the chosen database path; this is suitable for a published app so long as the executable is not forced to run from a protected install directory.
+- The project is already configured as a desktop app with `AvaloniaResource` assets and `app.manifest`; this makes single-file publishing a secondary concern rather than an unconditional choice because it must be validated against Avalonia resources, native dependencies, and runtime file access.
+- The repository currently has `scripts/run.sh`, `scripts/build.sh`, and `scripts/test.sh`; a Windows publication script should follow the existing scripts directory conventions and output a predictable `artifacts/windows/win-x64/` or similar folder.
+- A `README.md` does not currently exist in the repository, so the publishing instructions should be added to a new or existing user-facing documentation file if approved.
+
 ## Design notes and risks
 
 - The existing context factory is configured once at startup. The plan avoids runtime factory replacement and requires a restart after a path change; the settings UI must make that explicit.

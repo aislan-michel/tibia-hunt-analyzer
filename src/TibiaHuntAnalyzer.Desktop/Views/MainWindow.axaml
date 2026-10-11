@@ -11,7 +11,7 @@
         MinWidth="640"
         MinHeight="480">
 
-    <Grid RowDefinitions="Auto,*" Margin="24">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="24">
         <Button Grid.Row="0"
                 Content="⚙ Configurações"
                 Command="{Binding OpenSettingsCommand}"
@@ -21,5 +21,22 @@
 
         <ContentControl Grid.Row="1"
                         Content="{Binding CurrentViewModel}" />
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Vertical"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Margin="0,8,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="created by" />
+                <HyperlinkButton Content="Aislan Michel"
+                                 NavigateUri="{Binding CreatorProfileUrl}"
+                                 ToolTip.Tip="https://github.com/aislan-michel"
+                                 AutomationProperties.Name="Aislan Michel GitHub profile" />
+            </StackPanel>
+            <TextBlock Text="{Binding ApplicationVersion}"
+                       FontSize="11"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+        </StackPanel>
     </Grid>
 </Window>

@@ -8,6 +8,10 @@ Tibia Hunt Analyzer é um aplicativo desktop para registrar, armazenar, consulta
 
 Este repositório contém uma implementação funcional do aplicativo desktop com persistência em banco de dados, gerenciamento de configurações, fluxos de importação, consulta de sessões, analytics e um script de publicação para Windows. A build e a suíte automatizada de testes foram verificadas no ambiente atual antes desta atualização da documentação.
 
+## Versão da aplicação
+
+Versão atual: 1.0.0
+
 ## Funcionalidades
 
 - Importação de dados do Tibia Hunt Analyzer a partir de arquivos JSON.
@@ -143,13 +147,13 @@ O script publica o projeto desktop em configuração `Release` para `win-x64`, g
 artifacts/windows/win-x64/
 ```
 
-O executável gerado é:
+O executável gerado recebe o nome:
 
 ```text
-artifacts/windows/win-x64/TibiaHuntAnalyzer.Desktop.exe
+artifacts/windows/win-x64/Tibia Hunt Analyzer.exe
 ```
 
-O processo de publicação foi configurado intencionalmente para manter o resultado como um pacote padrão de aplicativo Windows (`PublishSingleFile=false`) e valida a criação do `.exe` antes de retornar sucesso.
+O processo de publicação foi configurado intencionalmente para manter o resultado como um pacote padrão de aplicativo Windows (`PublishSingleFile=false`), valida a criação do `.exe` antes de retornar sucesso e renomeia a saída final para o nome amigável do produto sem quebrar os arquivos de suporte do aplicativo.
 
 ## Armazenamento de dados e configuração do banco
 

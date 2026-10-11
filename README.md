@@ -8,6 +8,10 @@ Tibia Hunt Analyzer is a desktop application for recording, storing, querying, a
 
 This repository contains a working Avalonia-based desktop application with database persistence, settings management, hunt import workflows, session queries, analytics, and a Windows publish script. The build and automated test suite were verified in the current environment before this documentation update.
 
+## Application version
+
+Current version: 1.0.0
+
 ## Features
 
 - Import Hunt Analyzer data from JSON files.
@@ -143,13 +147,13 @@ The script publishes the desktop project in Release configuration for `win-x64`,
 artifacts/windows/win-x64/
 ```
 
-The generated executable is:
+The generated executable is named:
 
 ```text
-artifacts/windows/win-x64/TibiaHuntAnalyzer.Desktop.exe
+artifacts/windows/win-x64/Tibia Hunt Analyzer.exe
 ```
 
-The publish process is intentionally configured to keep the produced output as a standard Windows application bundle (`PublishSingleFile=false`) and validates that the `.exe` was created successfully before returning a successful exit code.
+The publish process is intentionally configured to keep the produced output as a standard Windows application bundle (`PublishSingleFile=false`), validates that the `.exe` was created successfully, and renames the final output to the user-facing product name without breaking the dependency files that accompany it.
 
 ## Data storage and database configuration
 

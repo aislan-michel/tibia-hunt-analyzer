@@ -76,3 +76,20 @@
 - A candidate new database may be initialized before its path setting is committed. If configuration persistence then fails, the unreferenced new file may remain, but the active database and saved configuration remain unchanged.
 - Entity renames preserve historical identity through existing foreign-key references; deactivation remains soft and must never delete referenced entities.
 - Removing CSV code must not change the SQLite schema or modify stored session data.
+
+## Phase 5: Branding, versioning, and Windows executable identity
+
+- [ ] Centralize the application version at `1.0.0` in the desktop project metadata and read it from the assembly during runtime.
+- [ ] Add a shared footer to the application shell with the attribution `created by Aislan Michel` and a visually secondary `1.0.0` version line.
+- [ ] Make only the creator name clickable and point it to `https://github.com/aislan-michel`.
+- [ ] Confirm the existing ICO file at `src/TibiaHuntAnalyzer.Desktop/Assets/tibia-hunt-analyzer.ico` is used for the Windows app icon and published executable.
+- [ ] Adjust the Windows publish workflow so the final executable name is `Tibia Hunt Analyzer.exe` while preserving the runtime files required by the app.
+- [ ] Update the README files and relevant task documentation to reflect the finalized branding/version/publish behavior.
+- [ ] Validate the build, automated tests, and Windows publish output in the available environment.
+
+### Phase 5 notes
+
+- The best shared integration point for the footer is the application shell, not each screen view, because all screens are already hosted under a single `MainWindow` and `MainViewModel` shell.
+- The app version should come from the project metadata instead of a duplicated hard-coded text value in the UI to reduce drift.
+- The published Windows executable name must be adjusted after the .NET publish step so the user-facing file is easy to identify and open without using the terminal.
+- The app icon should be configured at the project level and remain consistent with the shell window icon to provide correct Windows Explorer branding.

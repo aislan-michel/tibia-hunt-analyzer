@@ -7,7 +7,9 @@ $configuration = 'Release'
 $runtimeIdentifier = 'win-x64'
 $outputRoot = Join-Path $repoRoot 'artifacts\windows\win-x64'
 $projectName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
-$exePath = Join-Path $outputRoot "$projectName.exe"
+$publishedExePath = Join-Path $outputRoot "$projectName.exe"
+$finalExeName = 'Tibia Hunt Analyzer.exe'
+$finalExePath = Join-Path $outputRoot $finalExeName
 
 if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
     Write-Error 'The .NET SDK is not available on PATH. Install the .NET 10 SDK before publishing.'
@@ -41,11 +43,19 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-if (-not (Test-Path $exePath)) {
-    Write-Error "The expected Windows executable was not found after publishing: $exePath"
+if (Test-Path $publishedExePath) {
+    if (Test-Path $finalExePath) {
+        Remove-Item -Path $finalExePath -Force
+    }
+    Copy-Item -Path $publishedExePath -Destination $finalExePath -Force
+    Remove-Item -Path $publishedExePath -Force
+}
+
+if (-not (Test-Path $finalExePath)) {
+    Write-Error "The expected Windows executable was not found after publishing: $finalExePath"
     exit 1
 }
 
 Write-Host "Publish succeeded. Output: $outputRoot"
-Write-Host "Executable: $exePath"
+Write-Host "Executable: $finalExePath"
 exit 0

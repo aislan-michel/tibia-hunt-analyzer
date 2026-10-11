@@ -48,6 +48,10 @@ public partial class MainViewModel : ViewModelBase
 
     public bool IsHome => CurrentViewModel is HomeViewModel;
 
+    public string ApplicationVersion => ApplicationMetadata.VersionText;
+
+    public string CreatorProfileUrl => ApplicationMetadata.GitHubProfileUrl;
+
     public event EventHandler? ApplicationExitRequested;
 
     private async Task OpenInsertAsync()

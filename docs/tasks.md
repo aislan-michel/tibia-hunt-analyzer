@@ -93,3 +93,21 @@
 - The app version should come from the project metadata instead of a duplicated hard-coded text value in the UI to reduce drift.
 - The published Windows executable name must be adjusted after the .NET publish step so the user-facing file is easy to identify and open without using the terminal.
 - The app icon should be configured at the project level and remain consistent with the shell window icon to provide correct Windows Explorer branding.
+
+## Phase 6: Windows installer packaging (pending approval)
+
+- [ ] Confirm the installer requirements against the current app metadata: version `1.0.0`, published executable name `Tibia Hunt Analyzer.exe`, and published output directory `artifacts/windows/win-x64`.
+- [ ] Create a repeatable installer build wrapper in `scripts/build-installer.ps1` that resolves the repo root, verifies the published app, locates `ISCC.exe`, and fails fast with actionable errors if prerequisites are missing.
+- [ ] Add the Inno Setup definition at `installer/TibiaHuntAnalyzer.iss` with the app display name, version, icon, Start Menu shortcut, optional desktop shortcut, and common uninstall metadata.
+- [ ] Compile the installer into `artifacts/windows/installer/TibiaHuntAnalyzer-Setup.exe` while preserving the published app output and avoiding stale artifacts.
+- [ ] Validate database safety during installation: do not ship or overwrite a user database, preserve the current configured-path strategy, and avoid destructive migration or cleanup behavior during install or upgrade.
+- [ ] Update README or installation documentation to explain the installer workflow, prerequisites, and output folder.
+- [ ] Run the installer build script and verify the generated output file and compiler exit code before claiming success.
+
+### Phase 6 audit findings
+
+- The app is already published by `scripts/publish-windows.ps1` into `artifacts/windows/win-x64` and the final executable name is `Tibia Hunt Analyzer.exe`.
+- The application uses a per-user SQLite configuration and does not keep the database inside the repository or install folder; the installer must therefore avoid bundling any user database or source database files.
+- The current repo does not have Inno Setup installed in the environment (`iscc` is not found on PATH), so the installer implementation must document the external prerequisite and fail clearly when absent.
+- The installer should be built on top of the existing app publish output rather than reusing a debug build or development path, to keep deployment behavior consistent with the validated artifact.
+- The packaging strategy should remain simple and deterministic: publish first, then compile installer from the published app folder and required resources only.

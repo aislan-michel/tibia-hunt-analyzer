@@ -155,6 +155,31 @@ artifacts/windows/win-x64/Tibia Hunt Analyzer.exe
 
 The publish process is intentionally configured to keep the produced output as a standard Windows application bundle (`PublishSingleFile=false`), validates that the `.exe` was created successfully, and renames the final output to the user-facing product name without breaking the dependency files that accompany it.
 
+## Windows installer build
+
+The repository also includes an installer build script at [`scripts/build-installer.ps1`](scripts/build-installer.ps1) and the Inno Setup definition at [`installer/TibiaHuntAnalyzer.iss`](installer/TibiaHuntAnalyzer.iss).
+
+Run the installer workflow from a Windows PowerShell session:
+
+```powershell
+./scripts/build-installer.ps1
+```
+
+The script:
+
+1. Resolves the repository root reliably.
+2. Verifies the existing Windows app publish output.
+3. Validates the published `Tibia Hunt Analyzer.exe` exists.
+4. Locates `ISCC.exe` using the standard Inno Setup installation paths or PATH.
+5. Stops with a clear error if Inno Setup is not installed.
+6. Compiles the installer to:
+
+```text
+artifacts/windows/installer/TibiaHuntAnalyzer-Setup.exe
+```
+
+The installer is designed for a per-user installation model, creates a Start Menu shortcut, offers an optional desktop shortcut, and installs the published application files without altering the user database configuration or repository assets.
+
 ## Data storage and database configuration
 
 The application stores its SQLite database and runtime configuration under the per-user local application data directory rather than in the repository or the installation directory.

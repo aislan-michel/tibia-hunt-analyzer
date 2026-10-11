@@ -155,6 +155,31 @@ artifacts/windows/win-x64/Tibia Hunt Analyzer.exe
 
 O processo de publicação foi configurado intencionalmente para manter o resultado como um pacote padrão de aplicativo Windows (`PublishSingleFile=false`), valida a criação do `.exe` antes de retornar sucesso e renomeia a saída final para o nome amigável do produto sem quebrar os arquivos de suporte do aplicativo.
 
+## Build do instalador Windows
+
+O repositório também inclui um script de build do instalador em [`scripts/build-installer.ps1`](scripts/build-installer.ps1) e a definição do Inno Setup em [`installer/TibiaHuntAnalyzer.iss`](installer/TibiaHuntAnalyzer.iss).
+
+Execute o fluxo do instalador em uma sessão do PowerShell no Windows:
+
+```powershell
+./scripts/build-installer.ps1
+```
+
+O script:
+
+1. Resolve a raiz do repositório de forma confiável.
+2. Verifica a saída publicada do aplicativo Windows.
+3. Confirma a existência do `Tibia Hunt Analyzer.exe` publicado.
+4. Localiza o `ISCC.exe` usando os caminhos padrão do Inno Setup ou o `PATH`.
+5. Interrompe com uma mensagem clara quando o Inno Setup não está instalado.
+6. Compila o instalador em:
+
+```text
+artifacts/windows/installer/TibiaHuntAnalyzer-Setup.exe
+```
+
+O instalador foi desenhado para um modelo de instalação por usuário, cria um atalho no Menu Iniciar, oferece um atalho opcional na área de trabalho e instala os arquivos publicados sem alterar a configuração do banco do usuário ou os ativos do repositório.
+
 ## Armazenamento de dados e configuração do banco
 
 A aplicação armazena o banco SQLite e a configuração de execução no diretório local de dados do usuário, em vez do diretório do repositório ou da pasta de instalação.

@@ -19,7 +19,7 @@ Follow a guided vibe coding approach:
 
 ## 2. Project objective
 
-Build a cross-platform desktop application that records, stores, queries, exports, and analyzes Tibia Hunt Analyzer sessions.
+Build a cross-platform desktop application that records, stores, queries, and analyzes Tibia Hunt Analyzer sessions.
 
 The application must work offline and persist its data locally.
 
@@ -41,7 +41,6 @@ Use the following technologies:
 - Database: SQLite
 - ORM: Entity Framework Core with a compatible SQLite provider
 - JSON processing: System.Text.Json
-- CSV processing: CsvHelper
 - Dependency injection: Microsoft.Extensions.DependencyInjection
 - Logging: Microsoft.Extensions.Logging
 - Unit testing: xUnit
@@ -78,7 +77,7 @@ Contains use cases, application services, DTOs, validation, and abstractions for
 Contains domain entities, value objects, and business rules. It must not depend on the UI, database, or infrastructure implementations.
 
 ### Infrastructure
-Contains SQLite persistence, EF Core configurations and migrations, repositories where justified, importers, exporters, and settings persistence.
+Contains SQLite persistence, EF Core configurations and migrations, repositories where justified, Tibia input parsing, and application configuration persistence.
 
 ### Tests.Unit
 Covers domain rules, validation, parsers, and analytical calculations.
@@ -95,8 +94,12 @@ Do not create unnecessary interfaces, repositories, or abstractions without a cl
 Create a home screen containing:
 
 - A settings button with a gear icon in the upper-right corner.
-- A centered button labeled "Inserir Hunt Analyzer".
-- A button labeled "Consultar Hunt Analyzer" below the insertion button.
+- A button labeled "Inserir Hunt Analyzer".
+- A button labeled "Consultar Hunt Analyzer".
+- A button labeled "Gerenciar Personagens".
+- A button labeled "Gerenciar Locais de Hunt".
+
+The four buttons provide direct navigation to session entry, session queries, character management, and hunt-location management respectively.
 
 The interface must be responsive to reasonable window sizes, keyboard-accessible, and visually consistent.
 
@@ -104,27 +107,27 @@ Use clear labels, visible focus states, appropriate contrast, and understandable
 
 ## 6. Settings screen
 
-The settings screen must allow the user to manage:
-
-### Characters
-- Add a character.
-- Edit a character.
-- Deactivate a character without losing historical records.
-- Display the registered characters.
-
-### Hunt locations
-- Add a hunt location.
-- Edit a hunt location.
-- Deactivate a hunt location without losing historical records.
-- Display the registered locations.
-
-Settings must persist between application sessions.
+The settings screen displays the active SQLite database file path, allows the user to select a compatible existing database or a location for a new database, and saves the configuration. Character and hunt-location CRUD belongs on the dedicated screens, not in settings.
 
 Place the buttons side by side in this exact order:
 1. Sair
 2. Salvar
 
-Saving must validate the data and report success or failure.
+Saving validates the candidate database path and reports success or failure. A successfully saved path takes effect on the next application start; until restart, the running application continues using its current database connection factory. The UI must state this explicitly.
+
+The configured path is persisted separately from the database it identifies, in the per-user application configuration directory. Saving a path is staged: validate the path and destination, verify and migrate an existing compatible application database using only available non-destructive application migrations, or initialize a genuinely new database through EF Core migrations, and atomically persist the path only after validation succeeds. Do not treat an existing arbitrary or empty file as a new database, overwrite it, or silently fall back to another database. Invalid candidates leave the stored path and running application unchanged.
+
+At startup, resolve the configured database path once and use that single value for the EF Core context factory and database-dependent services. Verify that an existing file is a compatible application database before use; reject corrupt, incompatible, or newer-schema files with a clear startup error. Create and migrate a database only when the configured file does not yet exist. Do not automatically reset data or apply destructive migrations. The design avoids runtime DbContext reconnection: a successful path change is activated after restart, when no active contexts remain.
+
+### Character management
+
+Users can list, create, edit, and deactivate characters on the dedicated character-management screen. Deactivation is soft; referenced historical sessions remain associated with the same character record.
+
+### Hunt-location management
+
+Users can list, create, edit, and deactivate hunt locations on the dedicated hunt-location-management screen. Deactivation is soft; referenced historical sessions remain associated with the same location record.
+
+Both screens validate required names and persist changes in SQLite. Deactivation must not delete historical records or break existing session relationships.
 
 ## 7. Insert Hunt Analyzer screen
 
@@ -143,7 +146,7 @@ The form must display the buttons side by side in this exact order:
 
 Behavior:
 
-- Sair closes the application, subject to any appropriate unsaved-data confirmation.
+- Sair returns to the screen from which the insertion screen was opened, subject to the existing unsaved-input confirmation.
 - Limpar clears the form after handling any unsaved input appropriately.
 - Enviar validates the input, parses the session, and persists the complete record.
 - On success, display a clear confirmation.
@@ -241,7 +244,7 @@ Initial domain-model assumptions:
 SQLite is the primary source of truth.
 
 Requirements:
-- Store data in a suitable per-user application data directory.
+- Store the default database and application configuration in a suitable per-user application data directory.
 - Never depend on the application's installation directory being writable.
 - Use EF Core migrations.
 - Persist settings and historical sessions.
@@ -251,43 +254,18 @@ Requirements:
 - Prevent incomplete sessions from being committed.
 - Provide clear persistence errors.
 - Plan for local database backup and restoration.
+- Use one configured database path consistently for all EF Core contexts and infrastructure services.
+- Validate a proposed database path before persisting the setting; do not replace an existing file or change the active path on validation failure.
+- Apply migrations only to a new database or to a verified compatible database using reviewed, non-destructive migrations. Reject incompatible or newer databases without modifying them.
+- Apply a newly configured path after application restart, not by swapping connections while screens or DbContexts may still be active.
 
 Do not store all session data exclusively as an opaque JSON document.
 
-The home screen's backup/restore page exports a consistent SQLite backup to a user-selected `.db` or `.sqlite` file. Restore requires explicit confirmation, stages and validates the selected SQLite file and its application schema, applies available EF migrations to the staged copy, and checks referential integrity before changing the live database. Before restoring, the current database is kept as a timestamped `tibia-hunt-analyzer-pre-restore-*.db` file beside the application database. A failed restore attempts to roll back from that safety copy; failures are reported rather than treated as success.
+The backup/restore page exports a consistent SQLite backup to a user-selected `.db` or `.sqlite` file. Restore requires explicit confirmation, stages and validates the selected SQLite file and its application schema, applies available EF migrations to the staged copy, and checks referential integrity before changing the live database. Before restoring, the current database is kept as a timestamped `tibia-hunt-analyzer-pre-restore-*.db` file beside the application database. A failed restore attempts to roll back from that safety copy; failures are reported rather than treated as success.
 
-## 11. CSV import and export
+The application imports Tibia session data from JSON files or pasted Tibia text.
 
-Support both CSV import and CSV export.
-
-CSV export must allow users to export session records and their statistics for use in spreadsheet applications.
-
-CSV import must use a documented, application-defined schema.
-
-Requirements:
-- Define and document the CSV column names and data types.
-- Handle delimiters, quoting, encoding, and decimal formats consistently.
-- Validate imported rows.
-- Provide understandable errors identifying invalid rows and fields.
-- Avoid partial database updates when an import fails validation.
-- Preserve duplicate sessions when importing.
-- Do not silently overwrite existing records.
-
-Treat CSV import/export as a separate feature from importing the Tibia JSON and text formats.
-
-The implemented interchange schema is UTF-8 CSV with this exact header order:
-
-`RecordType,SessionId,CharacterId,HuntLocationId,CharacterLevel,SessionStart,SessionEnd,DurationTicks,InputFormat,OriginalInput,Balance,Damage,DamagePerHour,Healing,HealingPerHour,Loot,Supplies,XpGain,XpPerHour,RawXpGain,RawXpPerHour,RecordName,RecordCount`
-
-- `RecordType` is `Session`, `Monster`, or `Item`. Each session has one `Session` row, followed by zero or more child rows.
-- `SessionId` is a non-empty GUID used only to group rows within the CSV file. It must be unique for each session in the file; child rows must follow their session row. It is not the database identity, so importing the same file again creates duplicates rather than overwriting records.
-- Session rows require `CharacterId` and `HuntLocationId` GUIDs that identify currently active settings, positive `CharacterLevel`, `SessionStart` and `SessionEnd` timestamps in ISO 8601 round-trip (`O`) format, non-negative `DurationTicks`, and `InputFormat` (`Json` or `Text`). `OriginalInput` preserves the source content.
-- Numeric values use invariant culture, without localized decimal separators. Integer fields are whole numbers; decimal metrics use `.` as the decimal separator. `Balance`, `Damage`, `DamagePerHour`, `Healing`, `HealingPerHour`, `Loot`, `Supplies`, `XpGain`, `XpPerHour`, `RawXpGain`, and `RawXpPerHour` are optional and blank when absent. Balance may be negative; other metrics must be non-negative. `DurationTicks` stores the reported duration, not elapsed time.
-- Child rows require `SessionId` and `RecordName`; `RecordCount` is an optional positive whole number. Other session-only columns are blank on child rows.
-- CSV quoting, delimiters, embedded quotes, and multiline `OriginalInput` values follow standard CsvHelper CSV handling. Files should be saved as UTF-8. Spreadsheet applications that alter GUIDs, timestamps, or numeric formatting may make a file unsuitable for re-import.
-- Import validates all rows and active setting references before writing. Any validation error rejects the complete file without changing the database; a valid import writes every session and its child records in one transaction. Existing sessions are never overwritten.
-
-## 12. Query and details screens
+## 11. Query and details screens
 
 The query screen must display sessions in a table containing at least:
 
@@ -303,9 +281,9 @@ Selecting a row must open a details view showing the session metadata, all avail
 
 The query must retrieve the complete session information from SQLite.
 
-## 13. Analytics
+## 12. Analytics
 
-Implement the following analytical capabilities after recording, querying, and exporting sessions are reliable.
+Implement the following analytical capabilities after recording, querying, and importing sessions are reliable.
 
 ### Profit analysis
 - Balance per session.
@@ -340,7 +318,7 @@ The analytics application service reads persisted session metadata and statistic
 
 The desktop analytics screen exposes inclusive date filters and active character/location selectors, presents overall and grouped balance/XP metrics, distinguishes game-reported hourly values from calculated rates, and shows the contributing-session count alongside each displayed metric. Character level history is displayed chronologically. The screen is a report view, not a chart dashboard.
 
-## 14. Coding standards
+## 13. Coding standards
 
 - Write code, identifiers, class names, method names, variables, and technical documentation in English.
 - Use Portuguese comments only when they clarify a non-obvious implementation detail.
@@ -355,7 +333,7 @@ The desktop analytics screen exposes inclusive date filters and active character
 - Never silently swallow exceptions.
 - Avoid unnecessary dependencies and premature optimization.
 
-## 15. Testing requirements
+## 14. Testing requirements
 
 Write automated tests for the most important scenarios, including:
 
@@ -370,7 +348,9 @@ Write automated tests for the most important scenarios, including:
 - Successful persistence of a complete session.
 - Transaction rollback when persistence fails.
 - Retrieval of session details.
-- CSV import and export.
+- Database path validation and configuration persistence.
+- Rejection of incompatible SQLite files without changing the active configuration.
+- Character and hunt-location CRUD while preserving historical session associations.
 - Profit and XP calculations.
 - Zero-duration sessions.
 - Duplicate session handling.
@@ -381,7 +361,7 @@ Tests must be deterministic and must not depend on a live game client or interne
 
 Do not claim tests pass unless they have actually been executed.
 
-## 16. Development workflow
+## 15. Development workflow
 
 Work in small, reviewable milestones.
 
@@ -402,22 +382,6 @@ Do not overwrite existing work without understanding its purpose.
 
 Do not skip ahead to later phases without confirming the current phase is working.
 
-## 17. First task
+## 16. Current change scope
 
-Start with Phase 1: project foundation.
-
-Do not implement the complete application yet.
-
-First:
-1. Confirm the development environment and available SDK.
-2. Explain the required tools for Windows and Linux development.
-3. Propose the initial solution and project structure.
-4. Verify the compatibility of the selected Avalonia, .NET, and EF Core versions.
-5. Guide me through creating the solution and projects.
-6. Establish project references and dependency injection conventions.
-7. Create a minimal Avalonia application that builds and launches.
-8. Add the unit and integration test projects and verify that tests run.
-
-Finish Phase 1 with a working, buildable solution and a short checklist of verified results.
-
-Wait for my confirmation before proceeding to Phase 2.
+The current change request supersedes earlier screen and data-interchange requirements where they conflict: character and hunt-location management use dedicated screens; settings manage only the SQLite database path; and session entry exits back to its prior screen. Existing JSON/text import, SQLite records, session queries, analytics, and backup/restore must be preserved.

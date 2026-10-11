@@ -87,7 +87,7 @@ public partial class InsertHuntSessionViewModel(
         if (HasUnsavedInput && _pendingConfirmation != PendingConfirmationAction.Exit)
         {
             _pendingConfirmation = PendingConfirmationAction.Exit;
-            StatusMessage = "Unsaved input will be discarded. Select Sair again to close the application.";
+            StatusMessage = "Unsaved input will be discarded. Select Sair again to return to the previous screen.";
             return;
         }
 

@@ -1,28 +1,28 @@
 using System;
-using System.Collections.ObjectModel;
-using System.Linq;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FluentValidation;
 using TibiaHuntAnalyzer.Application.Settings;
 
 namespace TibiaHuntAnalyzer.Desktop.ViewModels;
 
-public partial class SettingsViewModel(ISettingsService settingsService) : ViewModelBase
+public partial class SettingsViewModel(
+    IDatabasePathSettingsService databasePathSettingsService,
+    string? startupError = null) : ViewModelBase
 {
+    private string? _savedPath;
     private bool _exitConfirmationPending;
 
-    public ObservableCollection<SettingEntryViewModel> Characters { get; } = [];
+    public string ActiveDatabasePath => databasePathSettingsService.ActiveDatabasePath;
 
-    public ObservableCollection<SettingEntryViewModel> HuntLocations { get; } = [];
+    public bool IsRecoveryMode => !string.IsNullOrWhiteSpace(startupError);
+
+    public string ExitButtonText => IsRecoveryMode ? "Fechar aplicativo" : "Sair";
 
     [ObservableProperty]
-    public partial string NewCharacterName { get; set; } = string.Empty;
-
-    [ObservableProperty]
-    public partial string NewHuntLocationName { get; set; } = string.Empty;
+    public partial string DatabasePath { get; set; } = string.Empty;
 
     [ObservableProperty]
     public partial string StatusMessage { get; set; } = string.Empty;
@@ -30,65 +30,72 @@ public partial class SettingsViewModel(ISettingsService settingsService) : ViewM
     [ObservableProperty]
     public partial bool HasUnsavedChanges { get; private set; }
 
+    [ObservableProperty]
+    public partial bool RestartRequired { get; private set; }
+
+    public event EventHandler? ExistingDatabaseBrowseRequested;
+
+    public event EventHandler? NewDatabaseBrowseRequested;
+
     public event EventHandler? ExitRequested;
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
-        var characters = await settingsService.GetCharactersAsync(cancellationToken);
-        var huntLocations = await settingsService.GetHuntLocationsAsync(cancellationToken);
-
-        Characters.Clear();
-        foreach (var character in characters)
+        try
         {
-            Characters.Add(CreateEntry(character));
+            DatabasePath = await databasePathSettingsService.GetConfiguredDatabasePathAsync(cancellationToken);
+            _savedPath = DatabasePath;
+            StatusMessage = startupError ?? string.Empty;
+        }
+        catch (Exception exception)
+        {
+            DatabasePath = ActiveDatabasePath;
+            _savedPath = null;
+            StatusMessage =
+                $"Could not read the saved database path: {exception.Message} Select a valid database path to repair the configuration.";
         }
 
-        HuntLocations.Clear();
-        foreach (var location in huntLocations)
-        {
-            HuntLocations.Add(CreateEntry(location));
-        }
-
-        NewCharacterName = string.Empty;
-        NewHuntLocationName = string.Empty;
         HasUnsavedChanges = false;
+        RestartRequired = false;
         _exitConfirmationPending = false;
     }
 
     [RelayCommand]
-    private void AddCharacter()
-    {
-        AddSetting(Characters, NewCharacterName, "character", value => NewCharacterName = value);
-    }
+    private void BrowseExistingDatabase() =>
+        ExistingDatabaseBrowseRequested?.Invoke(this, EventArgs.Empty);
 
     [RelayCommand]
-    private void AddHuntLocation()
-    {
-        AddSetting(HuntLocations, NewHuntLocationName, "hunt location", value => NewHuntLocationName = value);
-    }
+    private void BrowseNewDatabaseLocation() =>
+        NewDatabaseBrowseRequested?.Invoke(this, EventArgs.Empty);
 
     [RelayCommand]
-    private async Task SaveAsync(CancellationToken cancellationToken)
+    private async Task SaveAsync(CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(DatabasePath))
+        {
+            StatusMessage = "Select a database file or a location for a new database.";
+            return;
+        }
+
         try
         {
-            var request = new SaveSettingsRequest(
-                Characters.Select(character => character.ToSettingItem()).ToArray(),
-                HuntLocations.Select(location => location.ToSettingItem()).ToArray());
-
-            await settingsService.SaveAsync(request, cancellationToken);
-            StatusMessage = "Settings saved successfully.";
-            await LoadAsync(cancellationToken);
-        }
-        catch (ValidationException exception)
-        {
-            StatusMessage = string.Join(
-                Environment.NewLine,
-                exception.Errors.Select(error => $"{error.PropertyName}: {error.ErrorMessage}"));
+            var selectedPath = Path.GetFullPath(DatabasePath.Trim());
+            await databasePathSettingsService.ConfigureDatabasePathAsync(selectedPath, cancellationToken);
+            DatabasePath = selectedPath;
+            _savedPath = selectedPath;
+            HasUnsavedChanges = false;
+            _exitConfirmationPending = false;
+            RestartRequired = !string.Equals(
+                selectedPath,
+                ActiveDatabasePath,
+                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            StatusMessage = RestartRequired
+                ? "Database path saved. Close and reopen the application to use it."
+                : "The configured database path is already active.";
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            StatusMessage = $"Could not save settings: {exception.Message}";
+            StatusMessage = $"Could not save database path: {exception.Message}";
         }
     }
 
@@ -98,53 +105,25 @@ public partial class SettingsViewModel(ISettingsService settingsService) : ViewM
         if (HasUnsavedChanges && !_exitConfirmationPending)
         {
             _exitConfirmationPending = true;
-            StatusMessage = "Unsaved changes will be discarded. Select Sair again to discard them.";
+            StatusMessage = "Unsaved changes will be discarded. Select the exit button again to discard them.";
             return;
         }
 
         ExitRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    private void AddSetting(
-        ObservableCollection<SettingEntryViewModel> entries,
-        string name,
-        string settingType,
-        Action<string> clearName)
+    public void SelectDatabasePath(string path)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            StatusMessage = $"Enter a {settingType} name before adding it.";
-            return;
-        }
-
-        entries.Add(CreateEntry(new SettingItem(null, name.Trim(), true)));
-        clearName(string.Empty);
-        HasUnsavedChanges = true;
-        _exitConfirmationPending = false;
+        DatabasePath = path;
         StatusMessage = string.Empty;
     }
 
-    private SettingEntryViewModel CreateEntry(SettingItem item)
-    {
-        var entry = new SettingEntryViewModel(item);
-        entry.PropertyChanged += (_, _) =>
-        {
-            HasUnsavedChanges = true;
-            _exitConfirmationPending = false;
-        };
+    public void ReportBrowseError(string message) =>
+        StatusMessage = $"Could not select a database path: {message}";
 
-        return entry;
-    }
-
-    partial void OnNewCharacterNameChanged(string value)
+    partial void OnDatabasePathChanged(string value)
     {
-        HasUnsavedChanges = true;
-        _exitConfirmationPending = false;
-    }
-
-    partial void OnNewHuntLocationNameChanged(string value)
-    {
-        HasUnsavedChanges = true;
+        HasUnsavedChanges = !string.Equals(value, _savedPath, StringComparison.Ordinal);
         _exitConfirmationPending = false;
     }
 }

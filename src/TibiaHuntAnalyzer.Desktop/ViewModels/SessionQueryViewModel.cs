@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using TibiaHuntAnalyzer.Application.Csv;
 using TibiaHuntAnalyzer.Application.Sessions;
 
 namespace TibiaHuntAnalyzer.Desktop.ViewModels;
@@ -21,8 +20,7 @@ public enum SessionSortField
 }
 
 public partial class SessionQueryViewModel(
-    IHuntSessionService huntSessionService,
-    ICsvHuntSessionService csvHuntSessionService) : ViewModelBase
+    IHuntSessionService huntSessionService) : ViewModelBase
 {
     private HuntSessionSummary[] _allSessions = [];
 
@@ -63,10 +61,6 @@ public partial class SessionQueryViewModel(
     public partial bool IsDetailsVisible { get; private set; }
 
     public event EventHandler? ExitRequested;
-
-    public event EventHandler? CsvImportRequested;
-
-    public event EventHandler? CsvExportRequested;
 
     public async Task LoadAsync()
     {
@@ -133,51 +127,6 @@ public partial class SessionQueryViewModel(
 
     [RelayCommand]
     private void Exit() => ExitRequested?.Invoke(this, EventArgs.Empty);
-
-    [RelayCommand]
-    private void ImportCsv() => CsvImportRequested?.Invoke(this, EventArgs.Empty);
-
-    [RelayCommand]
-    private void ExportCsv() => CsvExportRequested?.Invoke(this, EventArgs.Empty);
-
-    public async Task ImportCsvAsync(TextReader reader)
-    {
-        try
-        {
-            var result = await csvHuntSessionService.ImportAsync(reader);
-            if (!result.IsSuccess)
-            {
-                StatusMessage = $"CSV import failed with {result.Errors.Count} error(s):{Environment.NewLine}" +
-                    string.Join(
-                        Environment.NewLine,
-                        result.Errors.Select(error => $"Row {error.Row}, {error.Field}: {error.Message}"));
-                return;
-            }
-
-            await LoadAsync();
-            StatusMessage = $"Imported {result.ImportedSessionCount} hunt session(s) from CSV.";
-        }
-        catch (Exception exception)
-        {
-            ReportCsvError(exception.Message);
-        }
-    }
-
-    public async Task ExportCsvAsync(TextWriter writer)
-    {
-        try
-        {
-            await csvHuntSessionService.ExportAsync(writer);
-            StatusMessage = "CSV export completed.";
-        }
-        catch (Exception exception)
-        {
-            ReportCsvError(exception.Message);
-        }
-    }
-
-    public void ReportCsvError(string message) =>
-        StatusMessage = $"CSV operation failed: {message}";
 
     [RelayCommand]
     private void ClearFilters()

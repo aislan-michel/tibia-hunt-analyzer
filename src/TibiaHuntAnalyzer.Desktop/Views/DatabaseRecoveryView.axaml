@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TibiaHuntAnalyzer.Desktop.ViewModels"
+             x:Class="TibiaHuntAnalyzer.Desktop.Views.DatabaseRecoveryView"
+             x:DataType="vm:DatabaseRecoveryViewModel">
+    <StackPanel HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="16"
+                MaxWidth="720">
+        <TextBlock Text="Não foi possível abrir o banco de dados"
+                   FontSize="24"
+                   FontWeight="SemiBold"
+                   TextWrapping="Wrap" />
+        <TextBlock Text="{Binding ErrorMessage}"
+                   TextWrapping="Wrap"
+                   AutomationProperties.LiveSetting="Polite" />
+        <TextBlock Text="Os dados atuais não foram substituídos. Configure um arquivo válido ou feche o aplicativo."
+                   TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Spacing="8">
+            <Button Content="Configurar banco de dados"
+                    Command="{Binding ConfigureDatabaseCommand}"
+                    MinWidth="220"
+                    MinHeight="44" />
+            <Button Content="Fechar aplicativo"
+                    Command="{Binding ExitCommand}"
+                    MinWidth="160"
+                    MinHeight="44" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

@@ -1,5 +1,4 @@
 using TibiaHuntAnalyzer.Application.Sessions;
-using TibiaHuntAnalyzer.Application.Csv;
 using TibiaHuntAnalyzer.Domain;
 using TibiaHuntAnalyzer.Desktop.ViewModels;
 
@@ -16,7 +15,7 @@ public class SessionQueryViewModelTests
             CreateSummary("Druid", "Cave", new DateTimeOffset(2026, 10, 9, 12, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 10, 9, 12, 0, 0)))),
             CreateSummary("Elite Knight", "Banuta", new DateTimeOffset(2026, 10, 8, 12, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 10, 8, 12, 0, 0))))
         };
-        var viewModel = new SessionQueryViewModel(new FakeHuntSessionService(sessions), new FakeCsvHuntSessionService());
+        var viewModel = new SessionQueryViewModel(new FakeHuntSessionService(sessions));
 
         await viewModel.LoadAsync();
 
@@ -42,8 +41,7 @@ public class SessionQueryViewModelTests
     public async Task LoadAsync_ReportsInvalidOrReversedDateFilters()
     {
         var viewModel = new SessionQueryViewModel(
-            new FakeHuntSessionService([CreateSummary("Knight", "Banuta", DateTimeOffset.UtcNow)]),
-            new FakeCsvHuntSessionService());
+            new FakeHuntSessionService([CreateSummary("Knight", "Banuta", DateTimeOffset.UtcNow)]));
         await viewModel.LoadAsync();
 
         viewModel.StartDateFilter = "10/10/2026";
@@ -77,8 +75,7 @@ public class SessionQueryViewModelTests
             [new SessionRecord("Dragon", 2)],
             [new SessionRecord("Gold coin", null)]);
         var viewModel = new SessionQueryViewModel(
-            new FakeHuntSessionService([summary], details),
-            new FakeCsvHuntSessionService());
+            new FakeHuntSessionService([summary], details));
         await viewModel.LoadAsync();
         viewModel.SelectedSession = summary;
 
@@ -94,24 +91,6 @@ public class SessionQueryViewModelTests
         viewModel.BackToSessionsCommand.Execute(null);
         Assert.False(viewModel.IsDetailsVisible);
         Assert.Null(viewModel.SelectedDetails);
-    }
-
-    [Fact]
-    public async Task ImportCsvAsync_ReportsErrorsWithoutRefreshingSessions()
-    {
-        var summary = CreateSummary("Knight", "Banuta", DateTimeOffset.UtcNow);
-        var csvService = new FakeCsvHuntSessionService(
-            CsvImportResult.Failure([new CsvImportError(3, "CharacterLevel", "Expected a whole number.")]));
-        var viewModel = new SessionQueryViewModel(
-            new FakeHuntSessionService([summary]),
-            csvService);
-        await viewModel.LoadAsync();
-
-        await viewModel.ImportCsvAsync(new StringReader("invalid csv"));
-
-        Assert.Single(viewModel.Sessions);
-        Assert.Contains("Row 3, CharacterLevel", viewModel.StatusMessage);
-        Assert.Equal(1, csvService.ImportCallCount);
     }
 
     private static HuntSessionSummary CreateSummary(
@@ -147,20 +126,4 @@ public class SessionQueryViewModelTests
             Task.FromResult(summaries);
     }
 
-    private sealed class FakeCsvHuntSessionService(
-        CsvImportResult? importResult = null) : ICsvHuntSessionService
-    {
-        public int ImportCallCount { get; private set; }
-
-        public Task ExportAsync(TextWriter writer, CancellationToken cancellationToken = default) =>
-            Task.CompletedTask;
-
-        public Task<CsvImportResult> ImportAsync(
-            TextReader reader,
-            CancellationToken cancellationToken = default)
-        {
-            ImportCallCount++;
-            return Task.FromResult(importResult ?? CsvImportResult.Success(1));
-        }
-    }
 }

@@ -4,10 +4,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TibiaHuntAnalyzer.Application.Analytics;
 using TibiaHuntAnalyzer.Application.Backups;
-using TibiaHuntAnalyzer.Application.Csv;
 using TibiaHuntAnalyzer.Application.Imports;
 using TibiaHuntAnalyzer.Application.Sessions;
 using TibiaHuntAnalyzer.Application.Settings;
+using TibiaHuntAnalyzer.Desktop;
 
 namespace TibiaHuntAnalyzer.Desktop.ViewModels;
 
@@ -15,29 +15,32 @@ public partial class MainViewModel : ViewModelBase
 {
     private readonly ISettingsService _settingsService;
     private readonly IHuntSessionService _huntSessionService;
-    private readonly ICsvHuntSessionService _csvHuntSessionService;
     private readonly IHuntAnalyticsService _huntAnalyticsService;
     private readonly IDatabaseBackupService _databaseBackupService;
+    private readonly IDatabasePathSettingsService _databasePathSettingsService;
     private readonly JsonHuntSessionParser _jsonParser;
     private readonly TextHuntSessionParser _textParser;
 
     public MainViewModel(
         ISettingsService settingsService,
         IHuntSessionService huntSessionService,
-        ICsvHuntSessionService csvHuntSessionService,
         IHuntAnalyticsService huntAnalyticsService,
         IDatabaseBackupService databaseBackupService,
+        IDatabasePathSettingsService databasePathSettingsService,
         JsonHuntSessionParser jsonParser,
-        TextHuntSessionParser textParser)
+        TextHuntSessionParser textParser,
+        DatabaseStartupStatus startupStatus)
     {
         _settingsService = settingsService;
         _huntSessionService = huntSessionService;
-        _csvHuntSessionService = csvHuntSessionService;
         _huntAnalyticsService = huntAnalyticsService;
         _databaseBackupService = databaseBackupService;
+        _databasePathSettingsService = databasePathSettingsService;
         _jsonParser = jsonParser;
         _textParser = textParser;
-        CurrentViewModel = CreateHomeViewModel();
+        CurrentViewModel = startupStatus.HasError
+            ? CreateDatabaseRecoveryViewModel(startupStatus.ErrorMessage!)
+            : CreateHomeViewModel();
     }
 
     [ObservableProperty]
@@ -45,8 +48,11 @@ public partial class MainViewModel : ViewModelBase
 
     public bool IsHome => CurrentViewModel is HomeViewModel;
 
+    public event EventHandler? ApplicationExitRequested;
+
     private async Task OpenInsertAsync()
     {
+        var previousViewModel = CurrentViewModel;
         try
         {
             var viewModel = new InsertHuntSessionViewModel(
@@ -54,7 +60,7 @@ public partial class MainViewModel : ViewModelBase
                 _huntSessionService,
                 _jsonParser,
                 _textParser);
-            viewModel.ExitRequested += (_, _) => ShutdownApplication();
+            viewModel.ExitRequested += (_, _) => CurrentViewModel = previousViewModel;
             await viewModel.LoadAsync();
             CurrentViewModel = viewModel;
         }
@@ -71,7 +77,7 @@ public partial class MainViewModel : ViewModelBase
     {
         try
         {
-            var settingsViewModel = new SettingsViewModel(_settingsService);
+            var settingsViewModel = new SettingsViewModel(_databasePathSettingsService);
             settingsViewModel.ExitRequested += (_, _) => CurrentViewModel = CreateHomeViewModel();
             await settingsViewModel.LoadAsync();
             CurrentViewModel = settingsViewModel;
@@ -84,9 +90,30 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    private async Task OpenRecoverySettingsAsync(SettingsViewModel settingsViewModel)
+    {
+        settingsViewModel.ExitRequested += (_, _) => ApplicationExitRequested?.Invoke(this, EventArgs.Empty);
+        await settingsViewModel.LoadAsync();
+        CurrentViewModel = settingsViewModel;
+    }
+
+    private DatabaseRecoveryViewModel CreateDatabaseRecoveryViewModel(string errorMessage)
+    {
+        var viewModel = new DatabaseRecoveryViewModel(errorMessage);
+        viewModel.ConfigureDatabaseRequested += async (_, _) =>
+        {
+            var settingsViewModel = new SettingsViewModel(
+                _databasePathSettingsService,
+                startupError: errorMessage);
+            await OpenRecoverySettingsAsync(settingsViewModel);
+        };
+        viewModel.ExitRequested += (_, _) => ApplicationExitRequested?.Invoke(this, EventArgs.Empty);
+        return viewModel;
+    }
+
     private async Task OpenQueryAsync()
     {
-        var viewModel = new SessionQueryViewModel(_huntSessionService, _csvHuntSessionService);
+        var viewModel = new SessionQueryViewModel(_huntSessionService);
         viewModel.ExitRequested += (_, _) => CurrentViewModel = CreateHomeViewModel();
         await viewModel.LoadAsync();
         CurrentViewModel = viewModel;
@@ -107,6 +134,23 @@ public partial class MainViewModel : ViewModelBase
         CurrentViewModel = viewModel;
     }
 
+    private async Task OpenSettingManagementAsync(ManagedSettingKind kind)
+    {
+        var viewModel = new SettingManagementViewModel(_settingsService, kind);
+        viewModel.ExitRequested += (_, _) => CurrentViewModel = CreateHomeViewModel();
+        try
+        {
+            await viewModel.LoadAsync();
+            CurrentViewModel = viewModel;
+        }
+        catch (Exception exception)
+        {
+            CurrentViewModel = new MessageViewModel(
+                $"Could not load {viewModel.Title.ToLowerInvariant()}: {exception.Message}",
+                () => CurrentViewModel = CreateHomeViewModel());
+        }
+    }
+
     partial void OnCurrentViewModelChanged(ViewModelBase value)
     {
         OnPropertyChanged(nameof(IsHome));
@@ -120,15 +164,11 @@ public partial class MainViewModel : ViewModelBase
         viewModel.QueryRequested += async (_, _) => await OpenQueryAsync();
         viewModel.AnalyticsRequested += async (_, _) => await OpenAnalyticsAsync();
         viewModel.BackupRestoreRequested += (_, _) => OpenBackupRestore();
+        viewModel.ManageCharactersRequested += async (_, _) =>
+            await OpenSettingManagementAsync(ManagedSettingKind.Character);
+        viewModel.ManageHuntLocationsRequested += async (_, _) =>
+            await OpenSettingManagementAsync(ManagedSettingKind.HuntLocation);
         return viewModel;
     }
 
-    private static void ShutdownApplication()
-    {
-        if (Avalonia.Application.Current?.ApplicationLifetime is
-            Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            desktop.Shutdown();
-        }
-    }
 }

@@ -1,7 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
@@ -25,6 +23,14 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = viewModel;
         _viewModel.PropertyChanged += OnMainViewModelPropertyChanged;
+        _viewModel.ApplicationExitRequested += (_, _) =>
+        {
+            if (Avalonia.Application.Current?.ApplicationLifetime is
+                Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.Shutdown();
+            }
+        };
         AttachToInsertViewModel();
     }
 
@@ -44,20 +50,20 @@ public partial class MainWindow : Window
                 await SelectJsonFileAsync(insertViewModel);
         }
 
-        if (_viewModel.CurrentViewModel is SessionQueryViewModel queryViewModel)
-        {
-            queryViewModel.CsvImportRequested += async (_, _) =>
-                await SelectCsvFileAsync(queryViewModel);
-            queryViewModel.CsvExportRequested += async (_, _) =>
-                await SaveCsvFileAsync(queryViewModel);
-        }
-
         if (_viewModel.CurrentViewModel is BackupRestoreViewModel backupRestoreViewModel)
         {
             backupRestoreViewModel.BackupRequested += async (_, _) =>
                 await SaveDatabaseBackupAsync(backupRestoreViewModel);
             backupRestoreViewModel.RestoreRequested += async (_, _) =>
                 await SelectDatabaseBackupAsync(backupRestoreViewModel);
+        }
+
+        if (_viewModel.CurrentViewModel is SettingsViewModel settingsViewModel)
+        {
+            settingsViewModel.ExistingDatabaseBrowseRequested += async (_, _) =>
+                await SelectExistingDatabaseAsync(settingsViewModel);
+            settingsViewModel.NewDatabaseBrowseRequested += async (_, _) =>
+                await SelectNewDatabaseLocationAsync(settingsViewModel);
         }
     }
 
@@ -89,71 +95,6 @@ public partial class MainWindow : Window
         catch (Exception exception)
         {
             viewModel.ReportFileError(exception.Message);
-        }
-    }
-
-    private async Task SelectCsvFileAsync(SessionQueryViewModel viewModel)
-    {
-        try
-        {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-            {
-                Title = "Select a Tibia Hunt Analyzer CSV file",
-                AllowMultiple = false,
-                FileTypeFilter =
-                [
-                    new FilePickerFileType("CSV files")
-                    {
-                        Patterns = ["*.csv"]
-                    }
-                ]
-            });
-
-            if (files.Count == 0)
-            {
-                return;
-            }
-
-            await using var stream = await files[0].OpenReadAsync();
-            using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
-            await viewModel.ImportCsvAsync(reader);
-        }
-        catch (Exception exception)
-        {
-            viewModel.ReportCsvError(exception.Message);
-        }
-    }
-
-    private async Task SaveCsvFileAsync(SessionQueryViewModel viewModel)
-    {
-        try
-        {
-            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-            {
-                Title = "Export Tibia Hunt Analyzer sessions",
-                SuggestedFileName = "tibia-hunt-sessions.csv",
-                DefaultExtension = "csv",
-                FileTypeChoices =
-                [
-                    new FilePickerFileType("CSV files")
-                    {
-                        Patterns = ["*.csv"]
-                    }
-                ]
-            });
-
-            if (file is null)
-            {
-                return;
-            }
-
-            await using var stream = await file.OpenWriteAsync();
-            await using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-            await viewModel.ExportCsvAsync(writer);
-        }
-        catch (Exception exception)
-        {
-            viewModel.ReportCsvError(exception.Message);
         }
     }
 
@@ -217,6 +158,63 @@ public partial class MainWindow : Window
         catch (Exception exception)
         {
             viewModel.ReportFileError(exception.Message);
+        }
+    }
+
+    private async Task SelectExistingDatabaseAsync(SettingsViewModel viewModel)
+    {
+        try
+        {
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Select an existing Tibia Hunt Analyzer database",
+                AllowMultiple = false,
+                FileTypeFilter =
+                [
+                    new FilePickerFileType("SQLite databases")
+                    {
+                        Patterns = ["*.db", "*.sqlite"]
+                    }
+                ]
+            });
+
+            if (files.Count > 0)
+            {
+                viewModel.SelectDatabasePath(files[0].Path.LocalPath);
+            }
+        }
+        catch (Exception exception)
+        {
+            viewModel.ReportBrowseError(exception.Message);
+        }
+    }
+
+    private async Task SelectNewDatabaseLocationAsync(SettingsViewModel viewModel)
+    {
+        try
+        {
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Choose a location for a new Tibia Hunt Analyzer database",
+                SuggestedFileName = "tibia-hunt-analyzer.db",
+                DefaultExtension = "db",
+                FileTypeChoices =
+                [
+                    new FilePickerFileType("SQLite databases")
+                    {
+                        Patterns = ["*.db", "*.sqlite"]
+                    }
+                ]
+            });
+
+            if (file is not null)
+            {
+                viewModel.SelectDatabasePath(file.Path.LocalPath);
+            }
+        }
+        catch (Exception exception)
+        {
+            viewModel.ReportBrowseError(exception.Message);
         }
     }
 }

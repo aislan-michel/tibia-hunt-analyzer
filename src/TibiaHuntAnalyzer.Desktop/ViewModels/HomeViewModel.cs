@@ -15,6 +15,10 @@ public sealed partial class HomeViewModel : ViewModelBase
 
     public event EventHandler? BackupRestoreRequested;
 
+    public event EventHandler? ManageCharactersRequested;
+
+    public event EventHandler? ManageHuntLocationsRequested;
+
     [RelayCommand]
     private void Insert() => InsertRequested?.Invoke(this, EventArgs.Empty);
 
@@ -29,4 +33,10 @@ public sealed partial class HomeViewModel : ViewModelBase
 
     [RelayCommand]
     private void OpenBackupRestore() => BackupRestoreRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
+    private void ManageCharacters() => ManageCharactersRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
+    private void ManageHuntLocations() => ManageHuntLocationsRequested?.Invoke(this, EventArgs.Empty);
 }

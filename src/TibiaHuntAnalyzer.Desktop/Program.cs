@@ -6,6 +6,11 @@ using TibiaHuntAnalyzer.Desktop.Views;
 using TibiaHuntAnalyzer.Infrastructure;
 using TibiaHuntAnalyzer.Infrastructure.Persistence;
 using TibiaHuntAnalyzer.Application.Imports;
+using TibiaHuntAnalyzer.Application.Settings;
+using TibiaHuntAnalyzer.Application.Sessions;
+using TibiaHuntAnalyzer.Application.Analytics;
+using TibiaHuntAnalyzer.Application.Backups;
+using System.IO;
 using System;
 
 namespace TibiaHuntAnalyzer.Desktop;
@@ -18,11 +23,37 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        using var services = CreateServiceProvider();
-        using (var dbContext = services.GetRequiredService<IDbContextFactory<HuntAnalyzerDbContext>>()
-                   .CreateDbContext())
+        var configurationPath = ApplicationDataPaths.GetConfigurationFilePath();
+        var isExplicitlyConfigured = File.Exists(configurationPath);
+        string databasePath;
+        DatabaseStartupStatus startupStatus;
+        try
         {
-            dbContext.Database.Migrate();
+            databasePath = ApplicationDataPaths.GetDatabasePath();
+            startupStatus = new DatabaseStartupStatus();
+        }
+        catch (Exception exception)
+        {
+            databasePath = ApplicationDataPaths.GetDefaultDatabasePath();
+            startupStatus = new DatabaseStartupStatus(
+                $"Could not read the configured database path: {exception.Message}");
+        }
+
+        using var services = CreateServiceProvider(databasePath, startupStatus);
+        if (!startupStatus.HasError)
+        {
+            try
+            {
+                DatabasePathCompatibility
+                    .InitializeConfiguredDatabaseAsync(databasePath, isExplicitlyConfigured)
+                    .GetAwaiter()
+                    .GetResult();
+            }
+            catch (Exception exception)
+            {
+                startupStatus.ReportError(
+                    $"Could not open the configured database at '{databasePath}': {exception.Message}");
+            }
         }
 
         BuildAvaloniaApp(services).StartWithClassicDesktopLifetime(args);
@@ -30,7 +61,13 @@ sealed class Program
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
-        => BuildAvaloniaApp(CreateServiceProvider());
+    {
+        var configurationPath = ApplicationDataPaths.GetConfigurationFilePath();
+        var databasePath = ApplicationDataPaths.GetDatabasePath();
+        return BuildAvaloniaApp(CreateServiceProvider(
+            databasePath,
+            new DatabaseStartupStatus()));
+    }
 
     private static AppBuilder BuildAvaloniaApp(IServiceProvider services)
         => AppBuilder.Configure(() => new App(services))
@@ -41,10 +78,13 @@ sealed class Program
             .WithInterFont()
             .LogToTrace();
 
-    private static ServiceProvider CreateServiceProvider()
+    private static ServiceProvider CreateServiceProvider(
+        string databasePath,
+        DatabaseStartupStatus startupStatus)
     {
         var services = new ServiceCollection();
-        services.AddInfrastructure();
+        services.AddSingleton(startupStatus);
+        services.AddInfrastructure(databasePath);
         services.AddSingleton<JsonHuntSessionParser>();
         services.AddSingleton<TextHuntSessionParser>();
         services.AddSingleton<MainViewModel>();

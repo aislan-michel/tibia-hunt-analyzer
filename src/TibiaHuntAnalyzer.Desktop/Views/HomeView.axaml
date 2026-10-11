@@ -19,6 +19,16 @@
                 MinWidth="280"
                 MinHeight="48"
                 HorizontalAlignment="Center" />
+        <Button Content="Gerenciar Personagens"
+                Command="{Binding ManageCharactersCommand}"
+                MinWidth="280"
+                MinHeight="48"
+                HorizontalAlignment="Center" />
+        <Button Content="Gerenciar Locais de Hunt"
+                Command="{Binding ManageHuntLocationsCommand}"
+                MinWidth="280"
+                MinHeight="48"
+                HorizontalAlignment="Center" />
         <Button Content="Analisar Hunt Analyzer"
                 Command="{Binding OpenAnalyticsCommand}"
                 MinWidth="280"

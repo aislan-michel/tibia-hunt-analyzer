@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TibiaHuntAnalyzer.Desktop.ViewModels"
+             x:Class="TibiaHuntAnalyzer.Desktop.Views.SettingManagementView"
+             x:DataType="vm:SettingManagementViewModel">
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto"
+          RowSpacing="12"
+          Margin="0,24,0,0">
+        <TextBlock Grid.Row="0"
+                   Text="{Binding Title}"
+                   FontSize="24"
+                   FontWeight="SemiBold" />
+
+        <Grid Grid.Row="1"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="8">
+            <TextBox Grid.Column="0"
+                     PlaceholderText="{Binding NamePlaceholder}"
+                     Text="{Binding NewName}" />
+            <Button Grid.Column="1"
+                    Content="Adicionar"
+                    Command="{Binding AddCommand}" />
+        </Grid>
+
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Entries}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="*,Auto"
+                              ColumnSpacing="8"
+                              Margin="0,3">
+                            <TextBox Grid.Column="0"
+                                     Text="{Binding Name}" />
+                            <CheckBox Grid.Column="1"
+                                      Content="Ativo"
+                                      IsChecked="{Binding IsActive}"
+                                      VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <TextBlock Grid.Row="3"
+                   Text="{Binding StatusMessage}"
+                   AutomationProperties.LiveSetting="Polite"
+                   TextWrapping="Wrap" />
+
+        <StackPanel Grid.Row="4"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="8">
+            <Button Content="Voltar"
+                    Command="{Binding ExitCommand}"
+                    MinWidth="100" />
+            <Button Content="Salvar"
+                    Command="{Binding SaveCommand}"
+                    MinWidth="100" />
+        </StackPanel>
+    </Grid>
+</UserControl>

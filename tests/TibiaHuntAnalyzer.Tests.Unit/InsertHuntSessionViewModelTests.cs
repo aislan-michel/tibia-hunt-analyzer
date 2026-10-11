@@ -112,7 +112,7 @@ public class InsertHuntSessionViewModelTests
         viewModel.InputContent = "unsaved text";
         viewModel.ExitCommand.Execute(null);
         Assert.Equal(0, exitCount);
-        Assert.Contains("Select Sair again", viewModel.StatusMessage);
+        Assert.Contains("Select Voltar again", viewModel.StatusMessage);
 
         viewModel.ExitCommand.Execute(null);
         Assert.Equal(1, exitCount);

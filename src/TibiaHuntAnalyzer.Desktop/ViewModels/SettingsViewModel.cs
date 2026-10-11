@@ -19,7 +19,7 @@ public partial class SettingsViewModel(
 
     public bool IsRecoveryMode => !string.IsNullOrWhiteSpace(startupError);
 
-    public string ExitButtonText => IsRecoveryMode ? "Fechar aplicativo" : "Sair";
+    public string ExitButtonText => IsRecoveryMode ? "Fechar aplicativo" : "Voltar";
 
     [ObservableProperty]
     public partial string DatabasePath { get; set; } = string.Empty;
@@ -105,7 +105,7 @@ public partial class SettingsViewModel(
         if (HasUnsavedChanges && !_exitConfirmationPending)
         {
             _exitConfirmationPending = true;
-            StatusMessage = "Unsaved changes will be discarded. Select the exit button again to discard them.";
+            StatusMessage = "Unsaved changes will be discarded. Select Voltar again to discard them.";
             return;
         }
 

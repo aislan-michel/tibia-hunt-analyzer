@@ -99,7 +99,7 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Spacing="8">
-            <Button Content="Sair"
+            <Button Content="Voltar"
                     Command="{Binding ExitCommand}"
                     MinWidth="100" />
             <Button Content="Limpar"

@@ -64,6 +64,19 @@ public class MainViewModelNavigationTests
         Assert.IsType<SessionQueryViewModel>(query);
     }
 
+    [Fact]
+    public void HomeExitButton_RequestsApplicationShutdown()
+    {
+        var viewModel = CreateMainViewModel();
+        var home = Assert.IsType<HomeViewModel>(viewModel.CurrentViewModel);
+        var shutdownRequested = false;
+        viewModel.ApplicationExitRequested += (_, _) => shutdownRequested = true;
+
+        home.ExitCommand.Execute(null);
+
+        Assert.True(shutdownRequested);
+    }
+
     private static async Task<T> NavigateTo<T>(MainViewModel viewModel, Action navigate)
         where T : ViewModelBase
     {

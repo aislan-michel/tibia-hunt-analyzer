@@ -176,7 +176,7 @@
                        VerticalAlignment="Center"
                        AutomationProperties.LiveSetting="Polite" />
             <Button Grid.Column="1"
-                    Content="Sair"
+                    Content="Voltar"
                     Command="{Binding ExitCommand}"
                     MinWidth="100" />
         </Grid>

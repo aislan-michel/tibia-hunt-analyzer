@@ -19,6 +19,8 @@ public sealed partial class HomeViewModel : ViewModelBase
 
     public event EventHandler? ManageHuntLocationsRequested;
 
+    public event EventHandler? ExitRequested;
+
     [RelayCommand]
     private void Insert() => InsertRequested?.Invoke(this, EventArgs.Empty);
 
@@ -39,4 +41,7 @@ public sealed partial class HomeViewModel : ViewModelBase
 
     [RelayCommand]
     private void ManageHuntLocations() => ManageHuntLocationsRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
+    private void Exit() => ExitRequested?.Invoke(this, EventArgs.Empty);
 }

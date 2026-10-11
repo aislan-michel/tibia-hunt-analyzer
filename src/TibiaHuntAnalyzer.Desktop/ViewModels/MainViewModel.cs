@@ -168,6 +168,7 @@ public partial class MainViewModel : ViewModelBase
             await OpenSettingManagementAsync(ManagedSettingKind.Character);
         viewModel.ManageHuntLocationsRequested += async (_, _) =>
             await OpenSettingManagementAsync(ManagedSettingKind.HuntLocation);
+        viewModel.ExitRequested += (_, _) => ApplicationExitRequested?.Invoke(this, EventArgs.Empty);
         return viewModel;
     }
 

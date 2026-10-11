@@ -39,5 +39,10 @@
                 MinWidth="280"
                 MinHeight="48"
                 HorizontalAlignment="Center" />
+        <Button Content="Sair"
+                Command="{Binding ExitCommand}"
+                MinWidth="280"
+                MinHeight="48"
+                HorizontalAlignment="Center" />
     </StackPanel>
 </UserControl>

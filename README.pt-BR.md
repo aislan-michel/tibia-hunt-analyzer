@@ -6,7 +6,7 @@ Tibia Hunt Analyzer é um aplicativo desktop para registrar, armazenar, consulta
 
 ## Status do projeto
 
-Este repositório contém uma implementação funcional do aplicativo desktop com persistência em banco de dados, gerenciamento de configurações, fluxos de importação, consulta de sessões, analytics e um script de publicação para Windows. A build e a suíte automatizada de testes foram verificadas no ambiente atual antes desta atualização da documentação.
+Este repositório contém uma implementação funcional do aplicativo desktop com persistência em banco de dados, gerenciamento de configurações, fluxos de importação, consulta de sessões, analytics e fluxos de publicação e instalador para Windows. Consulte `docs/tasks.md` para os marcos de implementação e verificação registrados; o teste visual interativo no Windows e no Linux ainda não foi verificado.
 
 ## Versão da aplicação
 
@@ -56,7 +56,10 @@ TibiaHuntAnalyzer/
 │  ├─ run.sh
 │  ├─ test.ps1
 │  ├─ test.sh
-│  └─ publish-windows.ps1
+│  ├─ publish-windows.ps1
+│  └─ build-installer.ps1
+├─ installer/
+│  └─ TibiaHuntAnalyzer.iss
 ├─ src/
 │  ├─ TibiaHuntAnalyzer.Desktop/
 │  │  ├─ ViewModels/
@@ -74,6 +77,7 @@ TibiaHuntAnalyzer/
 │  ├─ tasks.md
 │  ├─ Project Specification.md
 │  └─ Feature Changes and Improvements.md
+├─ LICENSE
 ├─ artifacts/
 │  └─ windows/
 └─ dotnet-tools.json
@@ -182,11 +186,11 @@ O instalador foi desenhado para um modelo de instalação por usuário, cria um 
 
 ## Armazenamento de dados e configuração do banco
 
-A aplicação armazena o banco SQLite e a configuração de execução no diretório local de dados do usuário, em vez do diretório do repositório ou da pasta de instalação.
+A base SQLite padrão é armazenada em `%LOCALAPPDATA%\TibiaHuntAnalyzer\tibia-hunt-analyzer.db` no Windows. Em outras plataformas, é usado o diretório equivalente, baseado na pasta `LocalApplicationData` do sistema operacional. O arquivo separado `database-path.json` guarda o caminho de banco selecionado pelo usuário.
 
-A localização efetiva é baseada na pasta `LocalApplicationData` do sistema operacional e no diretório específico do aplicativo `TibiaHuntAnalyzer`. A aplicação usa um arquivo de configuração separado para persistir o caminho selecionado do banco e cria ou valida o banco conforme necessário durante a inicialização.
+Na inicialização, se o arquivo do banco configurado não existir, o aplicativo o cria e aplica as migrações nesse caminho, desde que a pasta de destino exista e permita gravação. Se já houver um arquivo, o aplicativo valida sua compatibilidade e não o sobrescreve. A aplicação não troca silenciosamente para outro caminho.
 
-Esse desenho preserva os dados do usuário entre reinicializações do aplicativo e evita gravações em diretórios protegidos de instalação. A aplicação não substitui silenciosamente o banco atual quando o caminho é inválido ou incompatível; ela reporta o problema e mantém a configuração ativa estável até que um caminho válido seja selecionado.
+Esse desenho preserva os dados do usuário entre reinicializações e evita gravações em diretórios protegidos de instalação. Se o local configurado for inválido, inacessível ou contiver um banco incompatível, a aplicação informa o problema em vez de substituir o banco ou escolher outro local silenciosamente.
 
 ## Guia de uso
 

@@ -29,6 +29,14 @@ Supported desktop platforms:
 
 The application must be simple, clean, accessible, and easy to maintain.
 
+### Product status
+
+This document defines the product's target behavior; requirements are not evidence that every detail has been implemented or manually verified.
+
+- **Implemented (documented for version 1.0.0):** JSON and text session import, character and hunt-location management, session recording and queries, analytics, SQLite database-path configuration, local backup and restore, and Windows publishing and installer workflows.
+- **Planned:** No separate future feature backlog is currently approved in this specification. Requirements below describe the target behavior; mark a requirement as planned when implementation status is confirmed to be incomplete.
+- **Verification outstanding:** Interactive visual smoke testing on Windows and Linux.
+
 ## 3. Technology stack
 
 Use the following technologies:
@@ -117,7 +125,9 @@ Saving validates the candidate database path and reports success or failure. A s
 
 The configured path is persisted separately from the database it identifies, in the per-user application configuration directory. Saving a path is staged: validate the path and destination, verify and migrate an existing compatible application database using only available non-destructive application migrations, or initialize a genuinely new database through EF Core migrations, and atomically persist the path only after validation succeeds. Do not treat an existing arbitrary or empty file as a new database, overwrite it, or silently fall back to another database. Invalid candidates leave the stored path and running application unchanged.
 
-At startup, resolve the configured database path once and use that single value for the EF Core context factory and database-dependent services. Verify that an existing file is a compatible application database before use; reject corrupt, incompatible, or newer-schema files with a clear startup error. Create and migrate a database only when the configured file does not yet exist. Do not automatically reset data or apply destructive migrations. The design avoids runtime DbContext reconnection: a successful path change is activated after restart, when no active contexts remain.
+The default database file is `tibia-hunt-analyzer.db` under the per-user `LocalApplicationData/TibiaHuntAnalyzer` directory (on Windows, `%LOCALAPPDATA%\TibiaHuntAnalyzer\tibia-hunt-analyzer.db`). The separate `database-path.json` file stores a user-selected path.
+
+At startup, resolve the configured database path once and use that single value for the EF Core context factory and database-dependent services. If the configured database file does not exist, create and migrate it at that path, provided its parent directory exists and is writable. This applies to both the default path and a user-selected path; do not silently switch to another location. Verify an existing file is a compatible application database before use; reject corrupt, incompatible, or newer-schema files with a clear startup error. Do not automatically reset data, overwrite an existing file, or apply destructive migrations. The design avoids runtime DbContext reconnection: a successful path change is activated after restart, when no active contexts remain.
 
 ### Character management
 
@@ -384,4 +394,6 @@ Do not skip ahead to later phases without confirming the current phase is workin
 
 ## 16. Current change scope
 
-The current change request supersedes earlier screen and data-interchange requirements where they conflict: character and hunt-location management use dedicated screens; settings manage only the SQLite database path; and session entry exits back to its prior screen. Existing JSON/text import, SQLite records, session queries, analytics, and backup/restore must be preserved.
+The current product behavior supersedes earlier screen and data-interchange requirements where they conflict: character and hunt-location management use dedicated screens; settings manage only the SQLite database path; and session entry exits back to its prior screen. Existing JSON/text import, SQLite records, session queries, analytics, and backup/restore must be preserved.
+
+Use this specification as the target behavior for future changes. Check implementation status against the current code and tests before claiming a requirement is complete; distinguish automated verification from manual visual checks.

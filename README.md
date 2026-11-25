@@ -6,7 +6,7 @@ Tibia Hunt Analyzer is a desktop application for recording, storing, querying, a
 
 ## Project status
 
-This repository contains a working Avalonia-based desktop application with database persistence, settings management, hunt import workflows, session queries, analytics, and a Windows publish script. The build and automated test suite were verified in the current environment before this documentation update.
+This repository contains a working Avalonia-based desktop application with database persistence, settings management, hunt import workflows, session queries, analytics, and Windows publishing and installer workflows. See `docs/tasks.md` for recorded implementation and verification milestones; interactive visual smoke testing on Windows and Linux remains unverified.
 
 ## Application version
 
@@ -56,7 +56,10 @@ TibiaHuntAnalyzer/
 │  ├─ run.sh
 │  ├─ test.ps1
 │  ├─ test.sh
-│  └─ publish-windows.ps1
+│  ├─ publish-windows.ps1
+│  └─ build-installer.ps1
+├─ installer/
+│  └─ TibiaHuntAnalyzer.iss
 ├─ src/
 │  ├─ TibiaHuntAnalyzer.Desktop/
 │  │  ├─ ViewModels/
@@ -74,6 +77,7 @@ TibiaHuntAnalyzer/
 │  ├─ tasks.md
 │  ├─ Project Specification.md
 │  └─ Feature Changes and Improvements.md
+├─ LICENSE
 ├─ artifacts/
 │  └─ windows/
 └─ dotnet-tools.json
@@ -182,11 +186,11 @@ The installer is designed for a per-user installation model, creates a Start Men
 
 ## Data storage and database configuration
 
-The application stores its SQLite database and runtime configuration under the per-user local application data directory rather than in the repository or the installation directory.
+The default SQLite database is stored at `%LOCALAPPDATA%\TibiaHuntAnalyzer\tibia-hunt-analyzer.db` on Windows. On other platforms, the equivalent application-specific directory is based on the operating system's `LocalApplicationData` folder. The separate `database-path.json` configuration file stores a user-selected database path.
 
-The effective storage location is based on the operating system's `LocalApplicationData` folder and the application-specific directory `TibiaHuntAnalyzer`. The app uses a separate configuration file to persist the selected database path and creates or validates the database as needed during startup.
+At startup, if the configured database file is missing, the app creates and migrates it at that path, provided the parent directory exists and is writable. If a file already exists, the app validates compatibility and does not overwrite it. The application does not silently fall back to another path.
 
-This design preserves user data across application restarts and avoids writing into protected install directories. The application does not silently replace the current database when a path is invalid or incompatible; it reports the issue and keeps the active configuration stable until a valid path is selected.
+This design preserves user data across application restarts and avoids writing into protected install directories. If the configured location is invalid, inaccessible, or contains an incompatible database, the app reports the issue rather than replacing the database or silently choosing another location.
 
 ## Usage guide
 

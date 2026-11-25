@@ -1,5 +1,7 @@
 # Tibia Hunt Analyzer — Feature Changes and Improvements
 
+> Historical implementation request. The requirements below describe the previously approved change set and are retained for traceability; they are not a new or current backlog. Use `Project Specification.md` as the current product target and `tasks.md` for implementation and verification status.
+
 ## 1. Role and working methodology
 
 Act as a senior software engineer working on the existing Tibia Hunt Analyzer application.

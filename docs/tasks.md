@@ -1,4 +1,6 @@
-# Feature Changes — Implementation Tasks
+# Historical Feature Changes — Implementation Tasks
+
+This file records implementation and verification milestones for the historical change request in `Feature Changes and Improvements.md`. It is not the active product backlog. The interactive visual smoke-launch remains unverified.
 
 ## Phase 1: Inspect and specify
 
@@ -52,13 +54,13 @@
 - Source, test, project-manifest, and product-specification searches found no remaining CSV import/export surfaces.
 - Interactive visual smoke-launch remains unverified.
 
-## Phase 4: Windows publish script audit and plan
+## Phase 4: Windows publish workflow — complete
 
-- [ ] Confirm the exact application project, runtime target, and runtime dependency assumptions for Windows publication.
-- [ ] Decide whether the published app should be self-contained and whether single-file packaging is appropriate for the Avalonia desktop app.
-- [ ] Add a repeatable Windows PowerShell publication script under `scripts/` that resolves the repo root reliably and publishes `Release`/`win-x64` to a predictable output directory.
-- [ ] Verify the published `.exe` exists, the output folder contains required runtime files, and the script returns a nonzero code when publishing fails.
-- [ ] Document prerequisites, output directory, launch instructions, and any runtime limitations in the repository documentation.
+- [x] Confirm the exact application project, runtime target, and runtime dependency assumptions for Windows publication.
+- [x] Decide to publish a self-contained multi-file Avalonia desktop app rather than assume single-file packaging is appropriate.
+- [x] Add a repeatable Windows PowerShell publication script under `scripts/` that resolves the repo root reliably and publishes `Release`/`win-x64` to a predictable output directory.
+- [x] Verify the published `.exe` exists, the output folder contains required runtime files, and the script returns a nonzero code when publishing fails.
+- [x] Document prerequisites, output directory, launch instructions, and runtime limitations in the repository documentation.
 
 ### Audit findings for publication
 
@@ -66,8 +68,8 @@
 - It targets `net10.0` and emits a `WinExe` using Avalonia Desktop and Avalonia themes/assets; this is a standard native Windows desktop app and does not require a development server or a subsequently running `dotnet run` host.
 - The app stores its database in the per-user `LocalApplicationData\TibiaHuntAnalyzer` folder via `ApplicationDataPaths.GetDefaultDatabasePath()`, and it persists a separate config file with the chosen database path; this is suitable for a published app so long as the executable is not forced to run from a protected install directory.
 - The project is already configured as a desktop app with `AvaloniaResource` assets and `app.manifest`; this makes single-file publishing a secondary concern rather than an unconditional choice because it must be validated against Avalonia resources, native dependencies, and runtime file access.
-- The repository currently has `scripts/run.sh`, `scripts/build.sh`, and `scripts/test.sh`; a Windows publication script should follow the existing scripts directory conventions and output a predictable `artifacts/windows/win-x64/` or similar folder.
-- A `README.md` does not currently exist in the repository, so the publishing instructions should be added to a new or existing user-facing documentation file if approved.
+- The repository now includes `scripts/publish-windows.ps1`, which publishes to `artifacts/windows/win-x64/` and names the executable `Tibia Hunt Analyzer.exe`.
+- The repository has English and Brazilian Portuguese README files documenting the publishing workflow.
 
 ## Design notes and risks
 
@@ -77,15 +79,15 @@
 - Entity renames preserve historical identity through existing foreign-key references; deactivation remains soft and must never delete referenced entities.
 - Removing CSV code must not change the SQLite schema or modify stored session data.
 
-## Phase 5: Branding, versioning, and Windows executable identity
+## Phase 5: Branding, versioning, and Windows executable identity — complete
 
-- [ ] Centralize the application version at `1.0.0` in the desktop project metadata and read it from the assembly during runtime.
-- [ ] Add a shared footer to the application shell with the attribution `created by Aislan Michel` and a visually secondary `1.0.0` version line.
-- [ ] Make only the creator name clickable and point it to `https://github.com/aislan-michel`.
-- [ ] Confirm the existing ICO file at `src/TibiaHuntAnalyzer.Desktop/Assets/tibia-hunt-analyzer.ico` is used for the Windows app icon and published executable.
-- [ ] Adjust the Windows publish workflow so the final executable name is `Tibia Hunt Analyzer.exe` while preserving the runtime files required by the app.
-- [ ] Update the README files and relevant task documentation to reflect the finalized branding/version/publish behavior.
-- [ ] Validate the build, automated tests, and Windows publish output in the available environment.
+- [x] Centralize the application version at `1.0.0` in the desktop project metadata and read it from the assembly during runtime.
+- [x] Add a shared footer to the application shell with the attribution `created by Aislan Michel` and a visually secondary version line.
+- [x] Make only the creator name clickable and point it to `https://github.com/aislan-michel`.
+- [x] Configure the valid ICO file at `src/TibiaHuntAnalyzer.Desktop/Assets/tibia-hunt-analyzer-icon.ico` for the Windows app icon and published executable.
+- [x] Adjust the Windows publish workflow so the final executable name is `Tibia Hunt Analyzer.exe` while preserving the runtime files required by the app.
+- [x] Update the README files and relevant task documentation to reflect the finalized branding/version/publish behavior.
+- [x] Validate the build, automated tests, and Windows publish output in the available environment.
 
 ### Phase 5 notes
 
@@ -94,20 +96,20 @@
 - The published Windows executable name must be adjusted after the .NET publish step so the user-facing file is easy to identify and open without using the terminal.
 - The app icon should be configured at the project level and remain consistent with the shell window icon to provide correct Windows Explorer branding.
 
-## Phase 6: Windows installer packaging (pending approval)
+## Phase 6: Windows installer packaging — complete
 
-- [ ] Confirm the installer requirements against the current app metadata: version `1.0.0`, published executable name `Tibia Hunt Analyzer.exe`, and published output directory `artifacts/windows/win-x64`.
-- [ ] Create a repeatable installer build wrapper in `scripts/build-installer.ps1` that resolves the repo root, verifies the published app, locates `ISCC.exe`, and fails fast with actionable errors if prerequisites are missing.
-- [ ] Add the Inno Setup definition at `installer/TibiaHuntAnalyzer.iss` with the app display name, version, icon, Start Menu shortcut, optional desktop shortcut, and common uninstall metadata.
-- [ ] Compile the installer into `artifacts/windows/installer/TibiaHuntAnalyzer-Setup.exe` while preserving the published app output and avoiding stale artifacts.
-- [ ] Validate database safety during installation: do not ship or overwrite a user database, preserve the current configured-path strategy, and avoid destructive migration or cleanup behavior during install or upgrade.
-- [ ] Update README or installation documentation to explain the installer workflow, prerequisites, and output folder.
-- [ ] Run the installer build script and verify the generated output file and compiler exit code before claiming success.
+- [x] Confirm the installer requirements against the current app metadata: version `1.0.0`, published executable name `Tibia Hunt Analyzer.exe`, and published output directory `artifacts/windows/win-x64`.
+- [x] Create a repeatable installer build wrapper in `scripts/build-installer.ps1` that resolves the repo root, verifies the published app, locates `ISCC.exe`, and fails fast with actionable errors if prerequisites are missing.
+- [x] Add the Inno Setup definition at `installer/TibiaHuntAnalyzer.iss` with the app display name, version, icon, Start Menu shortcut, optional desktop shortcut, and uninstall metadata.
+- [x] Compile the installer into `artifacts/windows/installer/TibiaHuntAnalyzer-Setup.exe` while preserving the published app output and avoiding stale artifacts.
+- [x] Validate database safety during installation: do not ship or overwrite a user database, preserve the current configured-path strategy, and avoid destructive migration or cleanup behavior during install or upgrade.
+- [x] Update README or installation documentation to explain the installer workflow, prerequisites, and output folder.
+- [x] Run the installer build script and verify the generated output file and compiler exit code before claiming success.
 
 ### Phase 6 audit findings
 
 - The app is already published by `scripts/publish-windows.ps1` into `artifacts/windows/win-x64` and the final executable name is `Tibia Hunt Analyzer.exe`.
 - The application uses a per-user SQLite configuration and does not keep the database inside the repository or install folder; the installer must therefore avoid bundling any user database or source database files.
-- The current repo does not have Inno Setup installed in the environment (`iscc` is not found on PATH), so the installer implementation must document the external prerequisite and fail clearly when absent.
+- Inno Setup is an external build prerequisite. The wrapper searches for `ISCC.exe` on PATH and in common installation folders, and reports a clear error if it is unavailable.
 - The installer should be built on top of the existing app publish output rather than reusing a debug build or development path, to keep deployment behavior consistent with the validated artifact.
 - The packaging strategy should remain simple and deterministic: publish first, then compile installer from the published app folder and required resources only.
